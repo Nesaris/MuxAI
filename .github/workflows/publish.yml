@@ -54,6 +54,7 @@ jobs:
           docker exec essai codex --version
           docker exec essai git --version
           docker logs essai
+          docker exec essai sh -c "npm --version; find / -xdev \\( -path '*/undici/package.json' -o -path '*/brace-expansion/package.json' \\) 2>/dev/null | head -20"
           docker rm -f essai
 
       - name: Crible des vulnérabilités de l'image

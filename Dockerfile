@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # MuxAI : Node seul, aucune dépendance npm. L'image de base est épinglée par
 # empreinte (index multi-architecture amd64 + arm64).
-ARG NODE_IMAGE=node:24.22.1-bookworm-slim@sha256:be8204d4bd327363357f532187b752ff62759c31bedf98e9e18fc08c9cbd605c
+ARG NODE_IMAGE=node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
 FROM ${NODE_IMAGE}
 # Paquets du système à jour, puis ce dont les CLI ont besoin : git pour les
 # dépôts, python3 et openssh-client pour leurs outils, ripgrep pour la recherche.
@@ -10,7 +10,8 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends \
  && rm -rf /var/lib/apt/lists/*
 # Les CLI pilotés par MuxAI. npm et npx restent dans l'image : les serveurs MCP
 # lancés par « npx » en dépendent.
-RUN npm install -g --no-audit --no-fund @anthropic-ai/claude-code @openai/codex && npm cache clean --force
+RUN npm install -g --no-audit --no-fund npm@latest \
+ && npm install -g --no-audit --no-fund @anthropic-ai/claude-code @openai/codex && npm cache clean --force
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787 MUXAI_DATA=/data
 WORKDIR /app
 COPY server.js package.json ./
