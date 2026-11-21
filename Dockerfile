@@ -11,7 +11,10 @@ RUN apt-get update && apt-get upgrade -y --no-install-recommends \
 # Les CLI pilotés par MuxAI. npm et npx restent dans l'image : les serveurs MCP
 # lancés par « npx » en dépendent.
 RUN npm install -g --no-audit --no-fund npm@latest \
- && npm install -g --no-audit --no-fund @anthropic-ai/claude-code @openai/codex && npm cache clean --force
+ && npm install -g --no-audit --no-fund @anthropic-ai/claude-code @openai/codex \
+# Le binaire natif de Claude Code est posé par son script, lancé ici explicitement : npm ne lance plus les scripts seul.
+ && node "$(npm root -g)/@anthropic-ai/claude-code/install.cjs" \
+ && HOME=/tmp claude --version && HOME=/tmp codex --version && npm cache clean --force
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=8787 MUXAI_DATA=/data
 WORKDIR /app
 COPY server.js package.json ./
