@@ -1,0 +1,12 @@
+[
+  {
+    "version": "0.10.0",
+    "date": "2026-11-21",
+    "points": [
+      "Installable depuis le Hub : manifeste, image publiée et pile prête.",
+      "Le premier compte, administrateur, se crée avec un jeton d’installation dès que MuxAI écoute ailleurs que sur la machine elle-même.",
+      "GitHub : un jeton, puis les organisations et les dépôts ouverts aux IA, cochés un par un. Un projet peut copier un dépôt et en faire son dossier de travail.",
+      "Sécurité renforcée après une campagne d’attaques : mots de passe en Argon2id (12 caractères minimum), sessions de 12 heures fermées après une heure d’inactivité, verrou contre la force brute par adresse et par compte, base et conversations chiffrées avec la clé maîtresse du Hub, journal de sécurité."
+    ]
+  }
+]

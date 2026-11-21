@@ -1,0 +1,20 @@
+services:
+  muxai:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${MUXAI_BIND:-127.0.0.1:8787}:8787"   # adresse d'écoute sur l'hôte, à régler dans .env ; à publier via un reverse proxy HTTPS
+    environment:
+      MUXAI_SECURE: "${MUXAI_SECURE:-}"             # 1 derrière HTTPS
+      MUXAI_KEY: "${MUXAI_KEY:-}"                   # clé maîtresse : chiffre la base et les conversations
+      MUXAI_HOSTS: "${MUXAI_HOSTS:-}"               # noms d'hôte acceptés (ex. muxai.exemple.org)
+      MUXAI_SETUP_TOKEN: "${MUXAI_SETUP_TOKEN:-}"       # jeton demandé pour créer le premier compte
+      MUXAI_TRUST_PROXY: "${MUXAI_TRUST_PROXY:-}"   # 1 derrière un reverse proxy
+    volumes:
+      - muxai-data:/data          # comptes, conversations, connecteurs
+      - muxai-home:/home/node     # identifiants des CLI (~/.claude, ~/.codex)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # pour joindre un Ollama qui tourne sur l'hôte
+volumes:
+  muxai-data:
+  muxai-home:

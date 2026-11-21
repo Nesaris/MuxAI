@@ -1,0 +1,22 @@
+[Unit]
+Description=MuxAI - interface web pour agents IA
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Utilisateur qui possède les CLI connectés (claude, codex) : leurs identifiants sont dans son HOME.
+User=muxai
+WorkingDirectory=/opt/muxai
+ExecStart=/usr/bin/env node server.js
+Environment=HOST=127.0.0.1
+Environment=PORT=8787
+Environment=MUXAI_DATA=/var/lib/muxai
+# Les CLI installés par npm/installeur natif sont souvent ici :
+Environment=PATH=/home/muxai/.local/bin:/usr/local/bin:/usr/bin:/bin
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

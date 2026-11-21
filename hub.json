@@ -1,0 +1,40 @@
+{
+  "manifestVersion": 1,
+  "id": "muxai",
+  "name": "MuxAI",
+  "version": "0.10.0",
+  "description": "Interface web façon ChatGPT pour piloter Claude Code, Codex, Ollama et les API compatibles OpenAI : projets, agents, appareils reliés, outils MCP.",
+  "icon": "chat",
+  "repository": "https://github.com/Nesaris/MuxAI",
+  "license": "MIT",
+  "install": {
+    "type": "compose",
+    "compose": "deploy/compose.hub.yml",
+    "healthcheck": { "type": "http", "path": "/healthz", "expect": 200, "timeout": "5s" },
+    "arch": ["amd64", "arm64"],
+    "resources": { "ramMb": 1024, "cpu": 1, "diskMb": 2048 },
+    "ports": [{ "name": "http", "container": 8787, "protocol": "http", "expose": "proxy" }],
+    "volumes": [{ "name": "data", "path": "/data" }, { "name": "home", "path": "/home/node" }]
+  },
+  "config": [
+    { "key": "IMAGE_TAG", "label": "Version de l'image", "type": "string", "default": "0.10.0", "advanced": true, "help": "Étiquette de l'image publiée sur ghcr.io." },
+    { "key": "MASTER_KEY", "label": "Clé maîtresse", "type": "secret", "generate": "random:32", "help": "Scelle la base et les conversations (AES-256-GCM). Créée par le Hub, gardée dans son coffre, jamais sur le volume de MuxAI. La perdre, c'est perdre les données." },
+    { "key": "TRUST_PROXY", "label": "Relais de confiance", "type": "string", "default": "172.16.0.0/12", "advanced": true, "help": "Plages (CIDR, séparées par des virgules) des relais autorisés à transmettre l'adresse du client et le HTTPS : au moins celle du réseau du Hub, où vit Relay." },
+    { "key": "SETUP_TOKEN", "label": "Jeton d'installation", "type": "string", "required": true, "help": "Choisis un mot de passe provisoire. MuxAI le demande une seule fois, pour créer le premier compte, qui sera administrateur. Sans lui, personne ne peut prendre ce compte avant toi." }
+  ],
+  "api": { "baseUrl": "{{service.url}}", "auth": { "type": "none" } },
+  "capabilities": { "provides": [], "requires": [], "accepts": [] },
+  "triggers": [],
+  "actions": [],
+  "probes": [
+    { "id": "reachable", "name": "Joignable", "kind": "state", "request": { "method": "GET", "path": "/healthz" }, "value": "$.ok", "states": { "ok": [true, "true"] }, "interval": "30s" }
+  ],
+  "permissions": {
+    "dockerSocket": "none",
+    "privileged": false,
+    "hostNetwork": false,
+    "capAdd": [],
+    "egress": ["claude.ai", "api.anthropic.com", "chatgpt.com", "api.openai.com", "github.com", "api.github.com", "registry.npmjs.org"]
+  },
+  "ai": { "exposeActions": false, "hints": "MuxAI est une interface de conversation : elle lance Claude Code et Codex dans son propre conteneur et n'expose aucune action au Hub. Les comptes des IA et l'accès GitHub se règlent dans MuxAI, pas ici." }
+}

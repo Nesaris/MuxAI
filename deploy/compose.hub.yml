@@ -1,0 +1,45 @@
+# MuxAI installé par le Hub.
+# Les {{...}} sont remplacés à l'installation : port d'hôte, volumes nommés,
+# réseau partagé du Hub et réglages.
+services:
+  muxai:
+    image: ghcr.io/nesaris/muxai:{{config.IMAGE_TAG}}
+    container_name: {{service.host}}
+    restart: unless-stopped
+    networks: [hub]
+    ports:
+      - "{{hostport.http}}:8787"
+    volumes:
+      # Comptes, conversations, connecteurs, dépôts copiés.
+      - {{volume.data}}:/data
+      # Identifiants des CLI (~/.claude, ~/.codex) et leurs caches.
+      - {{volume.home}}:/home/node
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 2g
+    cpus: 2.0
+    pids_limit: 1024
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      TZ: "{{hub.tz}}"
+      # Derrière Relay : l'adresse du client et le HTTPS viennent du relais.
+      MUXAI_TRUST_PROXY: "{{config.TRUST_PROXY}}"
+      # Demandé une seule fois, pour créer le compte administrateur.
+      MUXAI_SETUP_TOKEN: "{{config.SETUP_TOKEN}}"
+      # Clé maîtresse : scelle la base et les conversations. Gardée par le Hub, jamais sur le volume.
+      MUXAI_KEY: "{{config.MASTER_KEY}}"
+
+networks:
+  hub:
+    name: {{hub.network}}
+    external: true
+
+volumes:
+  {{volume.data}}:
+    name: {{volume.data}}
+  {{volume.home}}:
+    name: {{volume.home}}

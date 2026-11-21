@@ -1,0 +1,9 @@
+data
+.git
+.github
+deploy
+test
+assets
+*.md
+hub.json
+.env*

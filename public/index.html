@@ -1,0 +1,1357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MuxAI</title>
+<meta name="description" content="MuxAI — une interface auto-hébergée pour parler à tes agents IA : Claude Code, Codex, Ollama et API compatibles OpenAI.">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cstyle%3Epath%7Bfill%3A%23111113%3Bstroke%3A%23111113%7D%40media%20(prefers-color-scheme%3A%20dark)%7Bpath%7Bfill%3A%23fff%3Bstroke%3A%23fff%7D%7D%3C%2Fstyle%3E%3Cpath%20stroke-width%3D%221.12%22%20stroke-linejoin%3D%22round%22%20d%3D%22M2.06%205.4L8.75%205.4L16%2017.67L23.25%205.4L29.94%205.4L25.76%2026.6L19.62%2026.6L22.27%2013.2L16%2023.81L9.73%2013.2L12.38%2026.6L6.24%2026.6Z%22%2F%3E%3C%2Fsvg%3E%0A">
+<style>
+:root{--side:#0d0d0d;--main:#000;--pill:#212121;--hover:#1c1c1c;--on:#242424;--line:#262626;--text:#ececec;--muted:#9b9b9b;--blue:#7ab7ff;--ok:#3ecf8e;--bad:#ff7b72;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body,#root{height:100%;margin:0}
+body{background:var(--main);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+a{color:var(--blue)}
+svg{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:#777}
+#app{height:100%;display:grid;grid-template-columns:300px minmax(0,1fr)}
+#app.closed{grid-template-columns:minmax(0,1fr)}
+#app.closed aside{display:none}
+
+aside{background:var(--side);border-right:1px solid #161616;display:flex;flex-direction:column;min-height:0}
+.top{display:flex;align-items:center;gap:4px;padding:14px 10px 10px 14px}
+.brandbox{flex:1;display:flex;align-items:center;min-width:0}
+svg.brand{width:auto;height:20px;fill:currentColor;stroke:none;stroke-width:0}
+.auth .brandbox{margin-bottom:30px}.auth svg.brand{height:26px}
+.ib{display:grid;place-items:center;width:36px;height:36px;border-radius:8px;color:#cfcfcf;flex:none}
+.ib:hover{background:var(--hover)}
+.ib.armed{color:var(--bad);background:var(--hover)}
+.ib.sm{width:28px;height:28px}.ib.sm svg{width:16px;height:16px}
+nav{padding:0 6px;display:grid;gap:2px}
+.item{display:flex;align-items:center;gap:12px;width:100%;height:40px;padding:0 10px;border-radius:10px;text-align:left}
+.item:hover{background:var(--hover)}
+.item.on{background:var(--on)}
+.find{margin:0 6px 6px;display:flex}
+.find input{flex:1;min-width:0;height:36px;padding:0 12px;border:1px solid var(--line);border-radius:10px;background:#141414;outline:0}
+.find input:focus{border-color:#555}
+.scroll{flex:1;overflow:auto;padding:0 6px 8px}
+.sect{display:flex;align-items:center;justify-content:space-between;padding:22px 4px 8px 10px;color:var(--muted);font-size:14px;min-height:58px}
+.r{display:flex;align-items:center;gap:2px;border-radius:10px;padding-right:4px}
+.r:hover{background:var(--hover)}.r.on{background:var(--on)}
+.r>.t{flex:1;min-width:0;display:flex;align-items:center;gap:10px;height:38px;padding:0 0 0 10px;text-align:left}
+.r>.t span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r>input{flex:1;min-width:0;height:30px;margin:4px 0 4px 6px;padding:0 6px;border:1px solid #555;border-radius:6px;background:#141414;outline:0}
+.r .ib{display:none}.r:hover .ib,.r .ib.armed,.r .ib:focus-visible{display:grid}
+.r .run{width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:8px;flex:none}
+.note{padding:4px 10px 0;color:var(--muted);font-size:13px}
+.foot{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid #161616}
+.av{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#2f9e63;font-size:11px;font-weight:600;text-transform:uppercase;flex:none}
+.foot .n{flex:1;min-width:0;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.foot .n small{display:block;color:var(--muted);font-size:12px}
+
+main{display:flex;flex-direction:column;min-width:0;min-height:0;position:relative}
+.bar{display:flex;align-items:center;gap:8px;height:56px;padding:0 14px;flex:none}
+.bar .model{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px;border-radius:8px;font-size:17px;font-weight:500;min-width:0}
+.bar .model span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .model:hover{background:var(--hover)}
+.bar h1{font-size:17px;font-weight:500;margin:0 0 0 6px}
+.bar .sp{flex:1}
+.bar select{height:32px;max-width:180px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:#0d0d0d}
+.chev{width:16px;height:16px;color:#8e8e8e}
+.tag{display:flex;align-items:center;gap:6px;height:28px;padding:0 4px 0 10px;border:1px solid var(--line);border-radius:14px;font-size:13px;color:#cfcfcf;white-space:nowrap}
+.tag button{display:grid;place-items:center;width:20px;height:20px;border-radius:50%}.tag button:hover{background:var(--hover)}.tag svg{width:12px;height:12px}
+
+.home{flex:1;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:0 20px 12vh;overflow:auto}
+.home>div{width:min(770px,100%)}
+.home h2{margin:0 0 28px;text-align:center;font-size:28px;font-weight:400;letter-spacing:-.01em}
+.home p{text-align:center;color:var(--muted);margin:-16px 0 24px}
+.home .cta{display:flex;justify-content:center}
+.pill{display:flex;align-items:flex-end;gap:6px;background:var(--pill);border-radius:28px;padding:8px 8px 8px 10px}
+.pill textarea{flex:1;min-width:0;height:36px;max-height:200px;padding:6px 4px;border:0;background:none;outline:0;resize:none;font-size:16px}
+.pill textarea::placeholder{color:#8e8e8e}
+.rb{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;flex:none}
+.rb:hover{background:#2f2f2f}
+.agent{display:flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:18px;color:#cfcfcf;white-space:nowrap;max-width:45%}
+.agent span:last-child{overflow:hidden;text-overflow:ellipsis}
+.agent:hover{background:#2f2f2f}
+.send{background:#fff;color:#000}.send:hover{background:#d9d9d9}
+.send:disabled{background:#3a3a3a;color:#888;cursor:not-allowed}
+
+.chat{flex:1;overflow:auto}
+.col{width:min(770px,100%);margin:0 auto;padding:12px 20px 24px}
+.u{margin:18px 0 18px auto;width:fit-content;max-width:75%;background:var(--pill);border-radius:20px;padding:10px 16px;white-space:pre-wrap;overflow-wrap:anywhere}
+.a{margin:18px 0}
+.a .who{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-bottom:6px}
+.a .acts{display:flex;gap:2px;margin:4px 0 0 -6px}
+.tools{margin:0 0 10px;color:var(--muted);font-size:13px}
+.tools summary{cursor:pointer;width:fit-content;max-width:100%;border:1px solid var(--line);border-radius:10px;padding:5px 10px;list-style:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tools summary::-webkit-details-marker{display:none}
+.tools ol{margin:6px 0 0;padding:8px 10px 8px 30px;border:1px solid var(--line);border-radius:10px;max-height:220px;overflow:auto;font:12px/1.5 var(--mono)}
+.tools li{overflow-wrap:anywhere}.tools li b{color:var(--text);font-weight:500}
+.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;margin-top:8px}
+.status i{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+.err{margin-top:8px;padding:8px 12px;border:1px solid var(--bad);border-radius:10px;color:var(--bad);font-size:14px;overflow-wrap:anywhere}
+.md{overflow-wrap:anywhere}
+.md>:first-child{margin-top:0}.md>:last-child{margin-bottom:0}
+.md p,.md ul,.md ol,.md blockquote,.md pre,.md .tbl{margin:0 0 12px}
+.md h2,.md h3,.md h4,.md h5{margin:22px 0 8px;line-height:1.25;font-weight:600}
+.md h2{font-size:22px}.md h3{font-size:18px}.md h4,.md h5{font-size:15px}
+.md ul,.md ol{padding-left:22px}.md li{margin:3px 0}
+.md code{font-family:var(--mono);font-size:.88em;background:#1a1a1a;border-radius:5px;padding:1px 5px}
+.md pre{position:relative;background:#0f0f0f;border:1px solid var(--line);border-radius:12px;padding:32px 14px 12px;overflow:auto}
+.md pre code{background:none;padding:0;font-size:13px;line-height:1.5;white-space:pre}
+.md pre .lang{position:absolute;top:8px;left:14px;font:11px var(--mono);color:var(--muted)}
+.md pre .copy{position:absolute;top:5px;right:6px;height:22px;padding:0 8px;border-radius:6px;color:var(--muted);font-size:12px}
+.md pre .copy:hover{background:#262626;color:var(--text)}
+.md blockquote{border-left:3px solid var(--line);padding-left:12px;color:var(--muted)}
+.md hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.md .tbl{overflow:auto}.md table{border-collapse:collapse;font-size:14px}
+.md th,.md td{border:1px solid var(--line);padding:5px 10px;text-align:left;vertical-align:top}.md th{background:#141414}
+.pill{position:relative}
+.slash{position:absolute;left:0;right:0;top:calc(100% + 8px);z-index:4;display:none;max-height:300px;overflow:auto;background:#1f1f1f;border:1px solid #303030;border-radius:14px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+.slash.show{display:block}
+.pill.up .slash{top:auto;bottom:calc(100% + 8px)}
+.slash button{display:flex;align-items:baseline;gap:12px;width:100%;min-height:38px;padding:6px 10px;border-radius:10px;text-align:left}
+.slash button.on,.slash button:hover{background:#2e2e2e}
+.slash code{font:14px var(--mono);white-space:nowrap}
+.slash span{flex:1;min-width:0;color:var(--muted);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slash small{color:var(--muted);font-size:12px;white-space:nowrap}
+.dock{padding:0 20px 14px;flex:none}
+.dock>div{width:min(770px,100%);margin:0 auto}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin-top:8px}
+
+/* Menus en cascade */
+.menu,.fly{background:#1f1f1f;border:1px solid #303030;border-radius:14px;padding:6px;box-shadow:0 12px 32px rgba(0,0,0,.6)}
+.menu{position:absolute;display:none;width:270px;z-index:5}
+.menu.show{display:block}
+.menu .item{height:44px}.menu .item small{display:block;color:var(--muted);font-size:12px;line-height:1.1}
+.menu .item>span:not(.dot):not(.ondot){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.menu .item:hover,.mi:hover>.item,.mi.open>.item{background:#2e2e2e}
+.mi{position:relative}
+.fly{display:none;position:absolute;left:calc(100% - 2px);top:-7px;width:230px;z-index:6}
+.fly .item{height:38px}
+.fly.leaf{max-height:60vh;overflow:auto}
+.mi:hover>.fly,.mi.open>.fly{display:block}
+.menu.left .fly{left:auto;right:calc(100% - 2px)}
+.menu.up .fly{top:auto;bottom:-7px}
+.menu .chev,.menu .check{margin-left:auto}.menu .check{width:16px;height:16px}
+.menu .ondot{width:6px;height:6px;border-radius:50%;background:#fff;margin-left:auto;flex:none}.menu .ondot+span .chev{margin-left:0}
+#ctx{position:fixed;z-index:30;width:250px}
+.menu .item.danger{color:var(--bad)}
+.r.arch>.t{color:var(--muted)}
+.menu hr{border:0;border-top:1px solid #303030;margin:6px 4px}
+.menu .wait{padding:10px 12px;color:var(--muted);font-size:13px}
+.menu .filter{width:100%;height:32px;margin:0 0 4px;padding:0 10px;border:1px solid #333;border-radius:8px;background:#171717;outline:0;font-size:13px}
+
+/* Pages et formulaires */
+.page{flex:1;overflow:auto}
+.page .col{padding-top:20px;padding-bottom:60px}
+.ph{display:flex;align-items:center;gap:12px;margin-bottom:6px}.ph h2{flex:1;margin:0;font-size:24px;font-weight:500;letter-spacing:-.01em}
+.page .col>p{margin:0 0 18px;color:var(--muted);font-size:14px;max-width:64ch}
+.page h3{font-size:16px;font-weight:600;margin:30px 0 8px}
+.ph+h3{margin-top:18px}.page h3+.cards{margin-top:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 16px;border:1px solid #333;border-radius:18px;font-size:14px;white-space:nowrap;flex:none}
+.btn:hover{background:var(--hover)}
+.btn.go{background:#fff;color:#000;border-color:#fff}.btn.go:hover{background:#d9d9d9}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn svg{width:16px;height:16px}
+.row{display:flex;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--line)}
+.row .n{flex:1;min-width:0}.row .n div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.row .n small{display:block;color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .st{font-size:13px;color:var(--muted);white-space:nowrap}.row .st.ok{color:var(--ok)}.row .st.ko{color:var(--bad)}
+.ghrepos{display:grid;gap:9px;padding:0 0 4px 36px}.ghrepos:not(:empty){padding-bottom:14px}.ghrepos label.check,.row label.check{display:flex;align-items:center;gap:9px;font-size:14px;cursor:pointer}.ghrepos small,.row .n small{color:var(--muted)}
+.none{padding:22px;border:1px dashed #333;border-radius:14px;color:var(--muted);font-size:14px}
+.form{display:grid;gap:16px;max-width:620px}
+.form label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.form label.check{display:flex;align-items:center;gap:9px;font-weight:400;font-size:14px}
+.form small{font-weight:400;color:var(--muted);font-size:12.5px;line-height:1.45}
+.form input:not([type=checkbox]),.form select,.form textarea{width:100%;height:40px;padding:0 12px;border:1px solid #333;border-radius:10px;background:#111;font-weight:400;outline:0}
+.form input:focus,.form select:focus,.form textarea:focus{border-color:#777}
+.form textarea{height:auto;min-height:72px;padding:10px 12px;resize:vertical;line-height:1.5}
+.form textarea.code{font:13px/1.5 var(--mono)}
+.form input[type=checkbox]{width:16px;height:16px;accent-color:#fff;flex:none}
+.form fieldset{border:0;padding:0;margin:0;display:grid;gap:8px}.form legend{font-size:13px;font-weight:600;padding:0;margin-bottom:6px}
+.form .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.form .ferr{color:var(--bad);font-size:13px;min-height:1em}
+.okmsg{color:var(--ok);font-size:13px}
+.cmd{background:#0f0f0f;border:1px solid var(--line);border-radius:12px;padding:14px;font:13px/1.5 var(--mono);overflow-wrap:anywhere;white-space:pre-wrap;margin:10px 0 14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:6px}
+.card{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:16px;border:1px solid var(--line);border-radius:16px;text-align:left;background:#0c0c0c;min-height:132px}
+.card:hover{background:var(--hover);border-color:#3a3a3a}
+.card b{font-weight:600}.card small{display:block;color:var(--muted);font-size:13px;line-height:1.35;margin-top:2px}
+.logo{display:grid;place-items:center;width:40px;height:40px;border-radius:10px;background:#fff;overflow:hidden;flex:none;color:#000;font-weight:700}
+.logo img{width:100%;height:100%;object-fit:contain;padding:6px}
+.logo.sm{width:26px;height:26px;border-radius:7px;font-size:12px}.logo.sm img{padding:3px}
+.wh{display:flex;align-items:center;gap:12px;margin-bottom:14px}.wh h2{margin:0;font-size:24px;font-weight:500}
+.wstat{margin:0 0 16px;color:var(--muted);font-size:14px}.wstat.ok{color:var(--ok)}.wstat.ko{color:var(--bad)}
+.steps{display:grid;gap:14px;margin:0 0 16px;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;display:grid;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:14px}
+.steps li>span::before{content:counter(s) ". ";color:var(--muted)}
+.steps .line{display:flex;gap:8px;flex-wrap:wrap}.steps input{flex:1;min-width:160px;height:38px;padding:0 12px;border:1px solid #333;border-radius:10px;background:#111;outline:0}
+a.btn{text-decoration:none;color:inherit}a.btn.go{color:#000}a.btn[aria-disabled=true]{opacity:.45;pointer-events:none}
+.out{margin:0;color:var(--muted);font-size:13px}.out pre{margin:8px 0 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:#0f0f0f;font:12px/1.5 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;color:#cfcfcf}
+.needs{margin:0 0 16px;padding-left:20px;color:var(--muted);font-size:14px;max-width:70ch}.needs li{margin:4px 0}
+code.inl{font:13px var(--mono);background:#1a1a1a;border-radius:5px;padding:2px 6px;overflow-wrap:anywhere}
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+
+.auth{min-height:100%;display:grid;place-items:center;padding:24px}
+.auth>div{width:min(380px,100%)}
+.auth b{display:block;font-size:22px;font-weight:600;margin-bottom:28px}
+.auth h1{font-size:24px;font-weight:500;margin:0 0 4px}.auth p{color:var(--muted);margin:0 0 22px;font-size:14px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#fff;color:#000;border-radius:10px;padding:8px 14px;font-size:14px;z-index:20;max-width:90vw}
+#toast:empty{display:none}
+.shade{display:none}
+/* Écrans tactiles : les actions révélées au survol restent visibles, cibles plus grandes */
+@media (hover:none){
+  .r .ib{display:grid}
+  .ib.sm{width:36px;height:36px}
+  .mi:hover>.fly{display:none}.mi.open>.fly{display:block}
+  .menu .item:hover,.mi:hover>.item{background:none}.mi.open>.item{background:#2e2e2e}
+}
+/* Tablette */
+@media (max-width:1100px){
+  #app{grid-template-columns:260px minmax(0,1fr)}
+  .fly{width:200px}
+}
+/* Téléphone et petite tablette : panneau en tiroir, menus en feuille basse, lignes empilées */
+@media (max-width:820px){
+  #app{grid-template-columns:minmax(0,1fr);height:100dvh}
+  #app aside{display:none}
+  #app.closed aside{display:flex;position:fixed;inset:0 auto 0 0;width:min(320px,86vw);z-index:9;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+  #app.closed .shade{display:block;position:fixed;inset:0;z-index:8;background:rgba(0,0,0,.6)}
+  .ib.sm{width:36px;height:36px}
+  .bar{gap:4px;padding:0 8px;padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top))}
+  .bar .model{font-size:16px;padding:0 6px;flex:0 1 auto}
+  .bar select{max-width:108px}
+  .tag{min-width:0;flex:0 1 auto;overflow:hidden}.tag{max-width:38vw}
+  .home{padding:0 12px 8vh}
+  .home h2{font-size:24px;margin-bottom:22px}
+  .col{padding:8px 14px 20px}
+  .u{max-width:88%}
+  .dock{padding:0 10px calc(10px + env(safe-area-inset-bottom))}
+  .hint{display:none}
+  .agent{max-width:38%;padding:0 8px}
+  .md pre{padding:30px 12px 10px}
+  /* Menus : feuille en bas de l'écran, sous-menus dépliés sur place */
+  .menu{position:fixed;left:8px!important;right:8px;top:auto!important;bottom:calc(8px + env(safe-area-inset-bottom))!important;width:auto;max-height:72dvh;overflow:auto;z-index:12;border-radius:18px}
+  #ctx{width:auto}
+  .menu .item{height:48px}
+  .fly,.menu.left .fly,.menu.up .fly{position:static;width:auto;border:0;box-shadow:none;background:none;padding:0 0 4px 22px;border-radius:0}
+  .fly .item{height:44px}
+  .fly.leaf{max-height:none;overflow:visible}
+  .mi:hover>.fly{display:none}.mi.open>.fly{display:block}
+  .mi.open>.item .chev{transform:rotate(90deg)}
+  /* Pages */
+  .page .col{padding-top:8px}
+  .ph{flex-wrap:wrap}.ph h2{font-size:21px;flex-basis:100%}
+  .row{flex-wrap:wrap;gap:8px 10px;padding:14px 0}
+  .row .n{flex:1 1 calc(100% - 40px)}
+  .row .st{margin-left:20px;margin-right:auto}
+  .form{gap:14px}
+  .form input:not([type=checkbox]),.form select,.form textarea,.find input,.r>input{font-size:16px}
+  .form .actions .btn{flex:1 1 auto;justify-content:center}
+  .cmd{font-size:12px}
+  #toast{bottom:calc(84px + env(safe-area-inset-bottom));width:max-content}
+}
+@media (max-width:380px){.agent span:last-child{display:none}.agent{padding:0 10px}}
+/* Faible hauteur (téléphone en paysage) */
+@media (max-height:480px){.home{padding-bottom:12px;place-items:start center;padding-top:8px}.home h2{font-size:20px;margin-bottom:12px}.bar{height:44px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+/* ───────── Outils ───────── */
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in attrs || {}) {
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'class') e.className = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k in e && k !== 'list' && k !== 'form' && k !== 'style') e[k] = v;
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(Infinity)) if (c != null && c !== false) e.append(c.nodeType ? c : String(c));
+  return e;
+}
+const P = {
+  edit: 'M12 4H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-5M18.5 3.5l2 2L12 14l-3 1 1-3z', search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-3.5-3.5',
+  panel: 'M6.5 4.5h11a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3v-9a3 3 0 0 1 3-3zM9.5 4.5v15', user: 'M12 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM5 20c.8-3.6 3.5-5.5 7-5.5s6.2 1.9 7 5.5',
+  git: 'M6 8v8M6 8a2 2 0 1 0 0-4a2 2 0 0 0 0 4zM6 20a2 2 0 1 0 0-4a2 2 0 0 0 0 4zM18 10a2 2 0 1 0 0-4a2 2 0 0 0 0 4zM18 10c0 4-12 2-12 6',
+  plug: 'M9 7V3M15 7V3M7 7h10v5a5 5 0 0 1-10 0zM12 17v4', screen: 'M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM8 21h8M12 17v4',
+  tool: 'M14 6a4 4 0 0 0 5 5l-8.5 8.5a2.1 2.1 0 0 1-3-3L16 8M14 6l2-2 4 4-2 2', dots: 'M5 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM12 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM19 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2z',
+  folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z', out: 'M10 5H5v14h5M14 8l4 4-4 4M18 12H9',
+  plus: 'M12 5v14M5 12h14', up: 'M12 19V5M6 11l6-6 6 6', stop: 'M7 7h10v10H7z', down: 'M6 9l6 6 6-6', right: 'M9 6l6 6-6 6', check: 'M5 12l5 5 9-10',
+  x: 'M6 6l12 12M18 6L6 18', trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13', pen: 'M4 20h4L19 9l-4-4L4 16z', copy: 'M9 9h11v11H9zM5 15V5a1 1 0 0 1 1-1h9',
+  redo: 'M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6', box: 'M4 6h16v4H4zM6 10v9h12v-9M10 14h4', save: 'M12 4v11M7 11l5 5 5-5M5 20h14',
+};
+const icon = (n, cls) => h('span', { style: 'display:contents', html: `<svg ${cls ? `class="${cls}" ` : ''}viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n]}"/></svg>` });
+const ib = (name, label, onclick, cls = '') => h('button', { class: 'ib ' + cls, type: 'button', title: label, 'aria-label': label, onclick }, icon(name));
+/* Suppression en deux temps : le premier clic arme, le second confirme. */
+function armed(label, action, cls = 'sm') {
+  const b = ib('trash', label, e => {
+    e.stopPropagation();
+    if (b.classList.contains('armed')) return action();
+    b.classList.add('armed'); b.title = 'Cliquer encore pour confirmer';
+    setTimeout(() => { b.classList.remove('armed'); b.title = label; }, 3000);
+  }, cls);
+  return b;
+}
+async function api(method, url, body) {
+  const r = await fetch(url, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && S.me) { S.me = null; render(); }
+  if (!r.ok) throw new Error(j.error || 'Erreur ' + r.status);
+  return j;
+}
+let toastTimer;
+function toast(msg) { $('#toast').textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('#toast').textContent = ''; }, 4500); }
+const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); }
+  catch { const a = h('textarea', { value: t, style: 'position:fixed;opacity:0' }); document.body.append(a); a.select(); document.execCommand('copy'); a.remove(); }
+}
+function put(el, ...kids) { el.replaceChildren(...kids.flat(Infinity).filter(c => c != null && c !== false)); }
+const LOGO = `<svg class="brand" viewBox="13 37 743.7 182" role="img" aria-label="MuxAI"><g fill="currentColor"><path fill="currentColor" stroke="currentColor" stroke-width="10" stroke-linejoin="round" d="M28 52L76 52L128 140L180 52L228 52L198 204L154 204L172.97 107.9L128 184L83.03 107.9L102 204L58 204Z"/><g transform="translate(314 168.5)"><path d="M108 0V-47.85Q108 -55.88 104.21 -60.34Q100.42 -64.8 93.75 -64.8Q89.47 -64.8 86.32 -62.81Q83.17 -60.82 81.41 -57.26Q79.65 -53.7 79.65 -49.05V0H59.25V-47.85Q59.25 -55.88 55.46 -60.34Q51.67 -64.8 45 -64.8Q38.62 -64.8 34.76 -60.41Q30.9 -56.02 30.9 -49.05V0H10.35V-81H28.35V-72.15Q31.88 -76.5 37.05 -79.27Q43.73 -82.95 52.05 -82.95Q61.57 -82.95 67.72 -78.9Q72.75 -75.52 75.6 -70.35Q79.42 -76.05 85.65 -79.42Q92.25 -82.95 100.35 -82.95Q114.22 -82.95 121.31 -74.74Q128.4 -66.52 128.4 -53.25V0ZM172.95 2.4Q163.43 2.4 157.43 -0.82Q151.43 -4.05 148.09 -9Q144.75 -13.95 143.32 -19.31Q141.9 -24.68 141.6 -29.1Q141.3 -33.52 141.3 -35.55V-81H162V-42.75Q162 -39.98 162.3 -35.66Q162.6 -31.35 164.18 -27Q165.75 -22.65 169.31 -19.73Q172.88 -16.8 179.4 -16.8Q182.03 -16.8 185.03 -17.62Q188.03 -18.45 190.65 -20.81Q193.28 -23.18 194.96 -27.79Q196.65 -32.4 196.65 -39.9V-81H217.2V0H199.2V-8.32Q196.43 -5.17 192.75 -2.77Q184.88 2.4 172.95 2.4ZM224.1 0 253.05 -40.95 224.7 -81H248.7L264.9 -57L280.8 -81H304.8L276.45 -40.95L305.55 0H281.55L264.9 -24.9L248.1 0Z"/><path fill-opacity=".6" d="M334.95 2.25Q326.25 2.25 320.21 -1.09Q314.18 -4.42 311.06 -10.01Q307.95 -15.6 307.95 -22.35Q307.95 -27.97 309.68 -32.62Q311.4 -37.27 315.26 -40.84Q319.13 -44.4 325.65 -46.8Q330.15 -48.45 336.38 -49.72Q342.6 -51 350.48 -52.2Q355.13 -52.88 360.3 -53.62Q359.7 -58.65 357 -61.27Q353.55 -64.65 345.45 -64.65Q340.95 -64.65 336.08 -62.47Q331.2 -60.3 329.25 -54.75L310.8 -60.6Q313.88 -70.65 322.35 -76.95Q330.83 -83.25 345.45 -83.25Q356.18 -83.25 364.5 -79.95Q372.83 -76.65 377.1 -68.55Q379.5 -64.05 379.95 -59.55Q380.4 -55.05 380.4 -49.5V0H362.55V-9.97Q357.75 -4.27 352.35 -1.43Q345.45 2.25 334.95 2.25ZM339.3 -13.8Q344.93 -13.8 348.79 -15.79Q352.65 -17.77 354.94 -20.32Q357.23 -22.88 358.05 -24.6Q359.63 -27.9 359.93 -32.32Q360.08 -34.95 360.08 -37.12Q355.05 -36.23 351.45 -35.62Q345.83 -34.57 342.38 -33.75Q338.93 -32.92 336.3 -31.95Q333.3 -30.75 331.46 -29.36Q329.63 -27.97 328.76 -26.32Q327.9 -24.68 327.9 -22.65Q327.9 -19.88 329.29 -17.89Q330.68 -15.9 333.23 -14.85Q335.78 -13.8 339.3 -13.8ZM396.3 -92.25V-110.25H416.7V-92.25ZM396.3 0V-81H416.7V0Z"/></g></g></svg>`;
+const brand = () => h('span', { class: 'brandbox', html: LOGO });
+const dot = c => h('span', { class: 'dot', style: `background:${c || '#777'}` });
+
+/* ───────── Markdown (rendu local, tout est échappé) ───────── */
+const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function inline(s) {
+  const codes = [];
+  s = esc(s).replace(/`([^`\n]+)`/g, (_, c) => { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; });
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*\w])\*([^*\s][^*\n]*?)\*(?!\w)/g, '$1<em>$2</em>')
+    .replace(/~~([^~\n]+)~~/g, '<del>$1</del>')
+    .replace(/\[([^\]\n]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => '<code>' + codes[i] + '</code>');
+}
+function md(src, depth = 0) {
+  const L = src.replace(/\r/g, '').split('\n'); let out = '', i = 0, m;
+  const special = l => /^(\s*```|#{1,4}\s|\s*>|\s*([-*+]|\d+[.)])\s+|\s*([-*_])(\s*\3){2,}\s*$)/.test(l);
+  const cells = s => s.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+  while (i < L.length) {
+    const l = L[i];
+    if (!l.trim()) { i++; continue; }
+    if ((m = /^\s*```\s*([\w+#.-]*)/.exec(l))) {
+      const buf = []; i++;
+      while (i < L.length && !/^\s*```\s*$/.test(L[i])) buf.push(L[i++]);
+      i++;
+      out += `<pre>${m[1] ? `<span class="lang">${esc(m[1])}</span>` : ''}<button class="copy" type="button">Copier</button><code>${esc(buf.join('\n'))}</code></pre>`;
+      continue;
+    }
+    if ((m = /^(#{1,4})\s+(.*)$/.exec(l))) { const n = m[1].length + 1; out += `<h${n}>${inline(m[2])}</h${n}>`; i++; continue; }
+    if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)) { out += '<hr>'; i++; continue; }
+    if (/^\s*>/.test(l)) {
+      const buf = [];
+      while (i < L.length && /^\s*>/.test(L[i])) buf.push(L[i++].replace(/^\s*>\s?/, ''));
+      out += depth < 8 ? `<blockquote>${md(buf.join('\n'), depth + 1)}</blockquote>` : `<p>${inline(buf.join('\n')).replace(/\n/g, '<br>')}</p>`; continue;
+    }
+    if (/^\s*\|.*\|\s*$/.test(l) && i + 1 < L.length && /^\s*\|?\s*:?-{2,}[\s|:-]*$/.test(L[i + 1])) {
+      const hd = cells(l), rows = []; i += 2;
+      while (i < L.length && L[i].includes('|') && L[i].trim()) rows.push(cells(L[i++]));
+      out += `<div class="tbl"><table><thead><tr>${hd.map(c => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+      continue;
+    }
+    if ((m = /^\s*([-*+]|\d+[.)])\s+/.exec(l))) {
+      const tag = /\d/.test(m[1]) ? 'ol' : 'ul', items = [];
+      while (i < L.length) {
+        const mm = /^\s*(?:[-*+]|\d+[.)])\s+(.*)$/.exec(L[i]);
+        if (mm) { items.push(mm[1]); i++; }
+        else if (items.length && /^\s{2,}\S/.test(L[i]) && !/^\s*```/.test(L[i])) { items[items.length - 1] += '\n' + L[i].trim(); i++; }
+        else break;
+      }
+      out += `<${tag}>${items.map(t => `<li>${inline(t).replace(/\n/g, '<br>')}</li>`).join('')}</${tag}>`; continue;
+    }
+    const buf = [];
+    while (i < L.length && L[i].trim() && !special(L[i])) buf.push(L[i++]);
+    if (!buf.length) buf.push(L[i++]);
+    out += `<p>${inline(buf.join('\n')).replace(/\n/g, '<br>')}</p>`;
+  }
+  return out;
+}
+
+/* ───────── État ───────── */
+const S = { me: null, setup: false, openSignup: false, providers: [], agents: [], projects: [], convs: [], devices: [], mcps: [],
+  view: 'chat', edit: null, project: null, cur: null, live: null, results: null, searching: false, renaming: null, folded: false,
+  pick: null, draftAgent: undefined, models: {}, ac: null, newDevice: null, mcpSetup: null };
+const TYPES = { 'claude-code': 'Claude Code', codex: 'Codex', ollama: 'Ollama', openai: 'API compatible OpenAI' };
+const TYPEC = { 'claude-code': '#e0885a', codex: '#9aa0a6', ollama: '#58c48a', openai: '#6ea8ff' };
+const COLORS = { orange: '#e0885a', gris: '#9aa0a6', vert: '#58c48a', bleu: '#6ea8ff', jaune: '#e6c14a', rose: '#e882b4', turquoise: '#4fc8c8' };
+const FAMILIES = ['Fable', 'Mythos', 'Opus', 'Sonnet', 'Haiku'];
+const agentById = id => S.agents.find(a => a.id === id);
+const providerById = id => S.providers.find(p => p.id === id);
+const isAdmin = () => S.me && S.me.role === 'admin';
+const isCli = t => t === 'claude-code' || t === 'codex';
+async function reload() { Object.assign(S, await api('GET', '/api/boot')); }
+const currentAgent = () => agentById(S.draftAgent !== undefined ? S.draftAgent : S.cur && S.cur.conv.agentId) || null;
+function pick() {
+  if (S.pick && providerById(S.pick.providerId)) return S.pick;
+  const saved = store.get('muxai.pick');
+  if (saved && providerById(saved.providerId)) return (S.pick = saved);
+  const p = S.providers[0];
+  return (S.pick = p ? { providerId: p.id, model: '', label: '' } : null);
+}
+function pickLabel() {
+  const k = pick(); if (!k) return 'Aucun connecteur';
+  const p = providerById(k.providerId);
+  if (!k.model) return isCli(p.type) ? p.name : 'Choisir un modèle';
+  const data = S.models[k.providerId], m = data && data.models && data.models.find(x => x.id === k.model);
+  return m ? m.label : k.label || k.model;
+}
+function setPick(providerId, model, label) { S.pick = { providerId, model, label }; store.set('muxai.pick', S.pick); }
+async function loadModels(pid, fresh) {
+  if (S.models[pid] && !fresh) return S.models[pid];
+  S.models[pid] = { loading: true, models: [] };
+  let data;
+  try { data = await api('GET', `/api/providers/${pid}/models${fresh ? '?fresh=1' : ''}`); }
+  catch (e) { data = { ok: false, models: [], info: e.message }; }
+  S.models[pid] = data;
+  if ($('#menu.show[data-kind=model]')) drawModelMenu();
+  $$('[data-label]').forEach(x => { x.textContent = pickLabel(); });
+  return data;
+}
+
+/* ───────── Formulaire générique ───────── */
+function form(fields, vals, o) {
+  const err = h('div', { class: 'ferr', role: 'alert' });
+  const btn = h('button', { class: 'btn go', type: 'submit' }, o.submit);
+  const f = h('form', { class: 'form', novalidate: true, onsubmit: async e => {
+    e.preventDefault(); err.textContent = ''; btn.disabled = true;
+    const out = {};
+    for (const d of fields) {
+      if (d.type === 'checks') out[d.k] = $$(`input[name="${d.k}"]:checked`, f).map(x => x.value);
+      else { const el = f.elements[d.k]; out[d.k] = d.type === 'checkbox' ? el.checked : el.value; }
+    }
+    try { await o.onSubmit(out); } catch (ex) { err.textContent = ex.message; }
+    btn.disabled = false;
+  } });
+  for (const d of fields) {
+    const v = vals[d.k];
+    if (d.type === 'checks') {
+      f.append(h('fieldset', {}, h('legend', {}, d.label), d.options.length ? d.options.map(([val, label]) => h('label', { class: 'check' }, h('input', { type: 'checkbox', name: d.k, value: val, checked: (v || []).includes(val) }), label)) : h('small', {}, d.empty)));
+      continue;
+    }
+    let el;
+    if (d.type === 'select') el = h('select', { name: d.k, onchange: d.onchange }, d.options.map(([val, label]) => h('option', { value: val, selected: String(v ?? '') === String(val) }, label)));
+    else if (d.type === 'textarea') el = h('textarea', { name: d.k, value: v || '', placeholder: d.ph, rows: d.rows || 4, class: d.code ? 'code' : '', spellcheck: !d.code });
+    else if (d.type === 'checkbox') el = h('input', { type: 'checkbox', name: d.k, checked: !!v });
+    else el = h('input', { type: d.type || 'text', name: d.k, value: v ?? '', placeholder: d.ph, autocomplete: d.ac || 'off', list: d.list, spellcheck: false });
+    f.append(d.type === 'checkbox'
+      ? h('label', { class: 'check' }, el, h('span', {}, d.label, d.hint && h('small', {}, ' — ' + d.hint)))
+      : h('label', {}, d.label, el, d.hint && h('small', {}, d.hint)));
+  }
+  f.append(err, h('div', { class: 'actions' }, btn, o.onCancel && h('button', { class: 'btn', type: 'button', onclick: o.onCancel }, 'Annuler'), o.extra));
+  return f;
+}
+
+/* ───────── Connexion ───────── */
+function renderAuth() {
+  let mode = S.setup ? 'register' : 'login';
+  const pane = h('div');
+  const draw = () => {
+    const reg = mode === 'register';
+    put(pane, brand(),
+      h('h1', {}, S.setup ? 'Créer le compte administrateur' : reg ? 'Créer un compte' : 'Connexion'),
+      h('p', {}, S.setup ? 'Premier lancement : ce compte gérera les connecteurs, les appareils et les autres comptes.' : reg ? 'Les inscriptions sont ouvertes sur ce serveur.' : 'Tes conversations restent sur ce serveur.'),
+      form([
+        { k: 'name', label: 'Nom d’utilisateur', ac: 'username' },
+        { k: 'password', label: 'Mot de passe', type: 'password', ac: reg ? 'new-password' : 'current-password', hint: reg && '12 caractères minimum.' },
+        ...(S.setup && S.setupToken ? [{ k: 'setupToken', label: 'Jeton d’installation', type: 'password', ac: 'off', hint: 'Celui choisi à l’installation (MUXAI_SETUP_TOKEN). Sinon, il est écrit dans le journal du serveur au démarrage.' }] : []),
+      ], {}, {
+        submit: reg ? 'Créer le compte' : 'Se connecter',
+        onSubmit: async v => { Object.assign(S, await api('POST', reg ? '/api/auth/register' : '/api/auth/login', v)); render(); },
+        extra: !S.setup && S.openSignup && h('button', { class: 'btn', type: 'button', onclick: () => { mode = reg ? 'login' : 'register'; draw(); } }, reg ? 'J’ai déjà un compte' : 'Créer un compte'),
+      }));
+    $('input', pane).focus();
+  };
+  put($('#root'), h('div', { class: 'auth' }, pane));
+  draw();
+}
+
+/* ───────── Structure ───────── */
+function render() {
+  if (!S.me) return renderAuth();
+  put($('#root'), h('div', { id: 'app', class: S.folded ? 'closed' : '' }, h('aside', { id: 'side' }), h('div', { class: 'shade', onclick: fold }), h('main', { id: 'main' })));
+  renderSide(); renderMain();
+}
+function fold() { S.folded = !S.folded; $('#app').classList.toggle('closed', S.folded); renderMain(); }
+const MQ = matchMedia('(max-width:820px)'), mobile = () => MQ.matches;
+MQ.addEventListener('change', () => { if (!S.me) return; S.folded = false; closeMenu(); render(); });
+function go(view, edit) {
+  S.view = view; S.edit = edit || null; S.newDevice = null; S.mcpSetup = null;
+  if (mobile() && S.folded) { S.folded = false; $('#app').classList.remove('closed'); }
+  renderSide(); renderMain();
+}
+function newChat(agentId) {
+  stopListening(); S.cur = null; S.live = null; S.draftAgent = agentId;
+  const a = agentById(agentId); if (a && a.providerId && providerById(a.providerId)) setPick(a.providerId, a.model || '', '');
+  go('chat');
+}
+
+let searchTimer;
+function renderSide() {
+  const side = $('#side'); if (!side) return;
+  const navItem = (ic, label, view, on) => h('button', { class: 'item' + (on ? ' on' : ''), type: 'button', onclick: () => (view === 'new' ? newChat() : go(view)) }, icon(ic), label);
+  const convRow = c => {
+    if (S.renaming === c.id) {
+      const inp = h('input', { value: c.title || '', 'aria-label': 'Titre de la conversation', onkeydown: e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { S.renaming = null; renderSide(); } },
+        onblur: async () => { if (S.renaming !== c.id) return; S.renaming = null; try { await api('PATCH', '/api/conversations/' + c.id, { title: inp.value }); await refreshConvs(); } catch (e) { toast(e.message); renderSide(); } } });
+      setTimeout(() => { inp.focus(); inp.select(); });
+      return h('div', { class: 'r on' }, inp);
+    }
+    return h('div', { class: 'r' + (c.archived ? ' arch' : '') + (S.view === 'chat' && S.cur && S.cur.conv.id === c.id ? ' on' : ''), oncontextmenu: e => { e.preventDefault(); convMenu(c, e.clientX, e.clientY); } },
+      h('button', { class: 't', type: 'button', onclick: () => openConv(c.id) }, h('span', {}, c.title || 'Nouveau chat')),
+      c.running && h('span', { class: 'run', title: 'Réponse en cours' }),
+      ib('dots', 'Actions sur la conversation', e => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); convMenu(c, r.left, r.bottom + 4); }, 'sm'));
+  };
+  const drawRecents = () => {
+    const l = (S.results || S.convs).filter(c => S.results || !S.project || c.projectId === S.project);
+    const live = S.results ? l : l.filter(c => !c.archived), arch = S.results ? [] : l.filter(c => c.archived);
+    put($('#recents'), h('div', { class: 'sect' }, S.results ? `${l.length} résultat${l.length > 1 ? 's' : ''}` : S.project ? 'Conversations du projet' : 'Récents'),
+      live.length ? live.map(convRow) : h('div', { class: 'note' }, S.results ? 'Aucune conversation ne correspond.' : 'Aucune conversation pour l’instant.'),
+      arch.length > 0 && h('div', { class: 'r', style: 'margin-top:10px' }, h('button', { class: 't', type: 'button', 'aria-expanded': String(!!S.showArchived), onclick: () => { S.showArchived = !S.showArchived; drawRecents(); } }, icon('box'), h('span', {}, `Archives (${arch.length})`))),
+      S.showArchived && arch.map(convRow));
+  };
+  put(side, 
+    h('div', { class: 'top' }, brand(),
+      ib('search', 'Rechercher', () => { S.searching = !S.searching; if (!S.searching) S.results = null; renderSide(); const i = $('.find input'); if (i) i.focus(); }),
+      ib('panel', 'Replier le panneau', fold)),
+    S.searching && h('div', { class: 'find' }, h('input', { type: 'search', placeholder: 'Rechercher dans les conversations', 'aria-label': 'Rechercher', oninput: e => {
+      clearTimeout(searchTimer); const v = e.target.value.trim();
+      searchTimer = setTimeout(async () => { try { S.results = v ? await api('GET', '/api/conversations?q=' + encodeURIComponent(v)) : null; drawRecents(); } catch (ex) { toast(ex.message); } }, 220);
+    } })),
+    h('nav', {},
+      navItem('edit', 'Nouveau chat', 'new', S.view === 'chat' && !S.cur),
+      navItem('user', 'Agents', 'agents', S.view === 'agents'),
+      isAdmin() && navItem('plug', 'Connecteurs', 'connectors', S.view === 'connectors'),
+      isAdmin() && navItem('screen', 'Appareils', 'devices', S.view === 'devices'),
+      isAdmin() && navItem('tool', 'Outils MCP', 'mcp', S.view === 'mcp'),
+      isAdmin() && navItem('git', 'GitHub', 'github', S.view === 'github'),
+      navItem('dots', 'Réglages', 'settings', S.view === 'settings')),
+    h('div', { class: 'scroll' },
+      h('div', { class: 'sect' }, 'Projets', ib('plus', 'Nouveau projet', () => go('project', {}), 'sm')),
+      S.projects.length ? S.projects.map(p => h('div', { class: 'r' + (S.project === p.id ? ' on' : '') },
+        h('button', { class: 't', type: 'button', 'aria-pressed': String(S.project === p.id), onclick: () => { S.project = S.project === p.id ? null : p.id; newChat(); } }, icon('folder'), h('span', {}, p.name)),
+        ib('pen', 'Modifier le projet', e => { e.stopPropagation(); go('project', p); }, 'sm')))
+        : h('div', { class: 'note' }, 'Un projet donne des instructions et un contexte communs à ses conversations.'),
+      h('div', { id: 'recents' })),
+    h('div', { class: 'foot' }, h('span', { class: 'av' }, S.me.name.slice(0, 2)), h('span', { class: 'n' }, S.me.name, h('small', {}, isAdmin() ? 'Administrateur' : 'Utilisateur')),
+      ib('out', 'Se déconnecter', async () => { await api('POST', '/api/auth/logout'); location.reload(); })));
+  drawRecents();
+}
+
+/* ───────── Menus ───────── */
+function placeMenu(anchor, above, span) {
+  const m = $('#menu'), r = anchor.getBoundingClientRect(), mr = $('#main').getBoundingClientRect(), w = m.offsetWidth;
+  const left = r.left - mr.left + span > mr.width;
+  m.classList.toggle('left', left); m.classList.toggle('up', above);
+  m.style.left = Math.max(8, Math.min(left ? r.right - mr.left - w : r.left - mr.left, mr.width - w - 8)) + 'px';
+  if (above) { m.style.top = 'auto'; m.style.bottom = (mr.bottom - r.top + 8) + 'px'; }
+  else { m.style.bottom = 'auto'; m.style.top = (r.bottom - mr.top + 6) + 'px'; }
+}
+const closeMenu = () => { const m = $('#menu'); if (m) m.classList.remove('show'); };
+const openKeys = new Set();
+function sub(lead, label, fly, on, key) {
+  const mi = h('div', { class: 'mi' + (openKeys.has(key) ? ' open' : '') }); mi.dataset.key = key;
+  mi.append(h('button', { class: 'item', type: 'button', onclick: e => { e.stopPropagation(); const was = mi.classList.contains('open'); [...mi.parentNode.children].forEach(x => { x.classList.remove('open'); openKeys.delete(x.dataset.key); }); mi.classList.toggle('open', !was); if (!was) openKeys.add(key); } },
+    lead, label, on ? h('span', { class: 'ondot' }) : null, icon('right', on ? '' : 'chev')), fly);
+  if (on) { const s = mi.querySelector('.item svg:last-of-type'); s.setAttribute('class', 'chev'); s.style.marginLeft = '8px'; }
+  return mi;
+}
+function drawModelMenu() {
+  const k = pick() || {};
+  const leafItem = (p, m) => h('button', { class: 'item', type: 'button', title: m.id || 'Modèle par défaut du CLI', onclick: () => { setPick(p.id, m.id, m.label); closeMenu(); renderMain(); } }, h('span', {}, m.label), k.providerId === p.id && k.model === m.id && icon('check', 'check'));
+  const leaf = (p, models) => {
+    const f = h('div', { class: 'fly leaf' });
+    if (models.length > 10) f.append(h('input', { class: 'filter', type: 'search', placeholder: `Filtrer ${models.length} modèles`, 'aria-label': 'Filtrer les modèles', onclick: e => e.stopPropagation(),
+      oninput: e => { const q = e.target.value.toLowerCase(); $$('.item', f).forEach(b => { b.style.display = (b.textContent + b.title).toLowerCase().includes(q) ? '' : 'none'; }); } }));
+    f.append(...models.map(m => leafItem(p, m)));
+    return f;
+  };
+  const provider = p => {
+    const d = S.models[p.id];
+    let fly;
+    if (!d || d.loading) fly = h('div', { class: 'fly' }, h('div', { class: 'wait' }, 'Chargement des modèles…'));
+    else if (!d.models.length) fly = h('div', { class: 'fly' }, h('div', { class: 'wait' }, d.ok ? 'Aucun modèle disponible.' : 'Injoignable : ' + d.info));
+    else {
+      const fams = [...new Set(d.models.map(m => m.family).filter(Boolean))];
+      const rank = f => (FAMILIES.indexOf(f) + 99) % 99;
+      if (!fams.length || fams.length > 14) fly = leaf(p, d.models);
+      else fly = h('div', { class: 'fly' }, d.models.filter(m => !m.family).map(m => leafItem(p, m)),
+        fams.sort((a, b) => rank(a) - rank(b) || a.localeCompare(b)).map(fam => { const ms = d.models.filter(m => m.family === fam); return sub(null, h('span', {}, fam), leaf(p, ms), k.providerId === p.id && ms.some(m => m.id === k.model), 'f:' + p.id + ':' + fam); }));
+    }
+    return sub(dot(TYPEC[p.type]), h('span', {}, p.name, h('small', {}, TYPES[p.type])), fly, false, 'p:' + p.id);
+  };
+  put($('#menu'), ...S.providers.map(provider),
+    ...(S.providers.length ? [] : [h('div', { class: 'wait' }, isAdmin() ? 'Aucun connecteur configuré.' : 'Aucun connecteur disponible pour ton compte.')]),
+    ...(isAdmin() ? [h('hr'), h('button', { class: 'item', type: 'button', onclick: () => go('connectors') }, 'Configurer un connecteur…')] : []));
+}
+function openModelMenu(anchor, above) {
+  const m = $('#menu'); if (m.classList.contains('show') && m.dataset.kind === 'model' && m.anchor === anchor) return closeMenu();
+  m.dataset.kind = 'model'; m.anchor = anchor; openKeys.clear(); drawModelMenu(); m.classList.add('show'); placeMenu(anchor, above, 270 + 230 + 230);
+  S.providers.forEach(p => loadModels(p.id));
+}
+function openAgentMenu(anchor) {
+  const m = $('#menu'); if (m.classList.contains('show') && m.dataset.kind === 'agent') return closeMenu();
+  const cur = currentAgent();
+  const choose = id => { closeMenu(); S.draftAgent = id; const a = agentById(id); if (a && a.providerId && providerById(a.providerId)) setPick(a.providerId, a.model || '', ''); renderMain(); };
+  m.dataset.kind = 'agent'; m.anchor = anchor;
+  put(m, h('div', { class: 'wait' }, 'Répondre avec un agent'),
+    ...S.agents.map(a => h('button', { class: 'item', type: 'button', onclick: () => choose(a.id) }, dot(COLORS[a.color]), h('span', {}, a.name), cur && cur.id === a.id && icon('check', 'check'))),
+    h('button', { class: 'item', type: 'button', onclick: () => choose(null) }, dot('#444'), h('span', {}, 'Sans agent'), !cur && icon('check', 'check')),
+    h('hr'), h('button', { class: 'item', type: 'button', onclick: () => go('agents') }, 'Gérer les agents…'));
+  m.classList.add('show'); placeMenu(anchor, true, 270);
+}
+document.addEventListener('click', e => { if (!e.target.closest('#menu,[data-pick],#modelBtn,[data-plus]')) closeMenu(); });
+
+function popMenu(x, y, items) {
+  closeCtx(); closeMenu();
+  const m = h('div', { class: 'menu show', id: 'ctx', role: 'menu' }, items.filter(Boolean).map(([ic, label, fn]) => h('button', { class: 'item', type: 'button', role: 'menuitem', onclick: () => { closeCtx(); fn(); } }, icon(ic), h('span', {}, label))));
+  document.body.append(m);
+  m.style.left = Math.max(8, Math.min(x, innerWidth - 258)) + 'px';
+  m.style.top = Math.max(8, Math.min(y, innerHeight - m.offsetHeight - 8)) + 'px';
+}
+/* Menu contextuel d'une conversation (clic droit, ou bouton « … »). */
+function closeCtx() { const m = $('#ctx'); if (m) m.remove(); }
+function convMenu(c, x, y) {
+  closeCtx(); closeMenu();
+  const run = fn => async () => { closeCtx(); try { await fn(); } catch (e) { toast(e.message); } };
+  const patch = body => run(async () => {
+    const r = await api('PATCH', '/api/conversations/' + c.id, body);
+    if (S.cur && S.cur.conv.id === c.id) Object.assign(S.cur.conv, r);
+    if (S.results) S.results = S.results.map(x => (x.id === c.id ? r : x));
+    await refreshConvs(); if (S.view === 'chat') renderMain();
+  });
+  const item = (ic, label, onclick, cls = '') => h('button', { class: 'item ' + cls, type: 'button', role: 'menuitem', onclick }, icon(ic), h('span', {}, label));
+  const del = item('trash', 'Supprimer', e => { e.stopPropagation(); if (del.dataset.armed) return run(() => delConv(c.id))(); del.dataset.armed = '1'; del.lastChild.textContent = 'Confirmer la suppression'; }, 'danger');
+  const m = h('div', { class: 'menu show', id: 'ctx', role: 'menu' },
+    item('pen', 'Renommer', run(() => { S.renaming = c.id; renderSide(); })),
+    S.projects.length > 0 && sub(icon('folder'), h('span', {}, 'Déplacer vers…'), h('div', { class: 'fly leaf' },
+      S.projects.map(p => h('button', { class: 'item', type: 'button', onclick: patch({ projectId: p.id }) }, h('span', {}, p.name), c.projectId === p.id && icon('check', 'check'))),
+      h('button', { class: 'item', type: 'button', onclick: patch({ projectId: null }) }, h('span', {}, 'Sans projet'), !c.projectId && icon('check', 'check'))), false, 'ctx-move'),
+    item('box', c.archived ? 'Désarchiver' : 'Archiver', patch({ archived: !c.archived })),
+    item('save', 'Exporter en Markdown', run(() => exportConv(c.id))),
+    h('hr'), del);
+  openKeys.clear();
+  document.body.append(m);
+  m.classList.toggle('left', x + 250 + 240 > innerWidth);
+  m.style.left = Math.max(8, Math.min(x, innerWidth - 258)) + 'px';
+  m.style.top = Math.max(8, Math.min(y, innerHeight - m.offsetHeight - 8)) + 'px';
+}
+document.addEventListener('click', e => { if (!e.target.closest('#ctx')) closeCtx(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCtx(); closeMenu(); } });
+addEventListener('resize', closeCtx); addEventListener('blur', closeCtx);
+
+/* Commandes « / » dans la barre de saisie : celles de MuxAI, et celles que Claude Code annonce. */
+let slashList = [], slashIdx = 0;
+function slashCommands() {
+  const conv = S.cur && S.cur.conv, k = pick(), p = k && providerById(k.providerId);
+  const patch = async body => { try { Object.assign(conv, await api('PATCH', '/api/conversations/' + conv.id, body)); await refreshConvs(); } catch (e) { toast(e.message); } };
+  const local = [
+    { n: 'nouveau', d: 'Démarrer un nouveau chat', run: () => newChat() },
+    { n: 'modele', d: 'Choisir le modèle', run: () => openModelMenu($('#modelBtn'), false) },
+    { n: 'agent', d: 'Répondre avec un agent', run: () => openAgentMenu($('[data-plus]')) },
+    conv && { n: 'renommer', d: 'Renommer cette conversation', run: () => { S.renaming = conv.id; if (S.folded !== mobile()) fold(); renderSide(); } },
+    conv && { n: 'archiver', d: conv.archived ? 'Sortir cette conversation des archives' : 'Archiver cette conversation', run: () => patch({ archived: !conv.archived }) },
+    conv && { n: 'exporter', d: 'Télécharger cette conversation en Markdown', run: () => exportConv() },
+    isAdmin() && p && p.type === 'claude-code' && !p.deviceId && { n: 'remote-control', d: 'Voir et piloter une session depuis claude.ai/code', run: () => go('connectors', { remote: p.id }) },
+    { n: 'agents', d: 'Ouvrir la page Agents', run: () => go('agents') },
+    isAdmin() && { n: 'connecteurs', d: 'Ouvrir la page Connecteurs', run: () => go('connectors') },
+    isAdmin() && { n: 'appareils', d: 'Ouvrir la page Appareils', run: () => go('devices') },
+    isAdmin() && { n: 'mcp', d: 'Ouvrir la page Outils MCP', run: () => go('mcp') },
+    { n: 'reglages', d: 'Ouvrir les réglages', run: () => go('settings') },
+  ].filter(Boolean).map(c => ({ ...c, from: 'MuxAI' }));
+  const remote = ((p && p.slash) || []).filter(n => !local.some(c => c.n === n)).map(n => ({ n, d: 'Envoyée telle quelle à ' + p.name, from: TYPES[p.type] }));
+  return [...local, ...remote];
+}
+function slashUpdate(input) {
+  const box = $('#slash'); if (!box) return;
+  const m = /^\/([\w:.-]*)$/.exec(input.value);
+  if (!m) { slashList = []; return box.classList.remove('show'); }
+  // Première fois avec Claude Code : on demande au CLI la liste de ses commandes.
+  const k = pick(), p = k && providerById(k.providerId);
+  if (p && p.type === 'claude-code' && !(p.slash && p.slash.length) && !p.slashAsked) {
+    p.slashAsked = 'loading';
+    api('GET', `/api/providers/${p.id}/commands`).then(j => { p.slash = j.list; }).catch(() => {}).finally(() => { p.slashAsked = 'done'; const i = $('#input'); if (i) slashUpdate(i); });
+  }
+  slashList = slashCommands().filter(c => c.n.toLowerCase().startsWith(m[1].toLowerCase()));
+  slashIdx = Math.max(0, Math.min(slashIdx, slashList.length - 1));
+  const loading = p && p.slashAsked === 'loading';
+  put(box, slashList.map((c, i) => h('button', { type: 'button', class: i === slashIdx ? 'on' : '', onmousedown: e => { e.preventDefault(); slashPick(input, c); } }, h('code', {}, '/' + c.n), h('span', {}, c.d), h('small', {}, c.from))),
+    loading && h('div', { class: 'note', style: 'padding:8px 10px' }, 'Chargement des commandes de ' + p.name + '…'),
+    !loading && !slashList.length && h('div', { class: 'note', style: 'padding:8px 10px' }, `Aucune commande ne commence par « /${m[1]} ».`));
+  box.classList.add('show');
+  // Garde la ligne choisie visible sans faire défiler la page (et sans rogner la première ligne).
+  const on = box.querySelector('.on');
+  if (!on || slashIdx === 0) box.scrollTop = 0;
+  else if (on.offsetTop < box.scrollTop) box.scrollTop = on.offsetTop - 6;
+  else if (on.offsetTop + on.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = on.offsetTop + on.offsetHeight - box.clientHeight + 6;
+}
+function slashPick(input, c) {
+  slashList = []; $('#slash').classList.remove('show');
+  if (c.run) { input.value = ''; input.style.height = ''; c.run(); }
+  else { input.value = '/' + c.n + ' '; input.focus(); }
+}
+function slashKey(e, input) {
+  if (!slashList.length) return false;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { slashIdx = (slashIdx + (e.key === 'ArrowDown' ? 1 : slashList.length - 1)) % slashList.length; slashUpdate(input); }
+  else if ((e.key === 'Enter' && !e.shiftKey && !e.isComposing) || e.key === 'Tab') slashPick(input, slashList[slashIdx]);
+  else if (e.key === 'Escape') { slashList = []; $('#slash').classList.remove('show'); }
+  else return false;
+  e.preventDefault(); return true;
+}
+
+/* ───────── Chat ───────── */
+function who(m) {
+  const model = m.modelLabel && !/^Modèle par défaut$/.test(m.modelLabel) ? m.modelLabel.replace(/ — dernière version$/, '') : m.providerName || m.model;
+  return h('div', { class: 'who' }, dot(TYPEC[m.providerType]), [m.agentName, model].filter(Boolean).join(' · ') || 'Assistant');
+}
+function toolsNode(tools) {
+  if (!tools || !tools.length) return null;
+  const last = tools.at(-1);
+  return h('details', { class: 'tools' }, h('summary', {}, tools.length > 1 ? `${tools.length} actions — ${last.name}` : `${last.name}${last.detail ? ' · ' + last.detail.slice(0, 60) : ''}`),
+    h('ol', {}, tools.map(t => h('li', {}, h('b', {}, t.name), t.detail ? ' ' + t.detail : ''))));
+}
+function messageNode(m, last) {
+  if (m.role === 'user') return h('div', { class: 'u' }, m.content);
+  return h('div', { class: 'a' }, who(m), toolsNode(m.tools),
+    m.content && h('div', { class: 'md', html: md(m.content) }),
+    m.stopped && h('div', { class: 'status' }, 'Réponse arrêtée.'),
+    m.error && h('div', { class: 'err' }, m.error),
+    m.error && /claude update/.test(m.error) && isAdmin() && h('div', { class: 'acts', style: 'margin:8px 0 0' }, h('button', { class: 'btn', type: 'button', onclick: () => go('connectors') }, 'Mettre à jour Claude Code dans Connecteurs')),
+    h('div', { class: 'acts' }, m.content && ib('copy', 'Copier la réponse', () => { copyText(m.content); toast('Réponse copiée'); }, 'sm'), last && ib('redo', 'Régénérer la réponse', () => send(null, true), 'sm')));
+}
+function liveNode() {
+  const l = S.live, last = l.tools.at(-1);
+  return h('div', { class: 'a', id: 'live' }, who(l.head), toolsNode(l.tools), h('div', { class: 'md', html: md(l.text) }),
+    h('div', { class: 'status' }, h('i'), last ? `${last.name} ${last.detail}`.slice(0, 90) : l.text ? 'Écriture…' : 'En attente de la réponse…'));
+}
+let rafLive = 0;
+function paintLive() {
+  if (rafLive) return;
+  rafLive = requestAnimationFrame(() => {
+    rafLive = 0;
+    const node = $('#live'), sc = $('#chat'); if (!node || !S.live) return;
+    const stick = sc.scrollHeight - sc.scrollTop - sc.clientHeight < 120;
+    node.replaceWith(liveNode());
+    if (stick) sc.scrollTop = sc.scrollHeight;
+  });
+}
+function renderMain() {
+  const main = $('#main'); if (!main) return;
+  if (S.view !== 'chat') return renderPage(main);
+  const prev = $('#input'), draft = prev ? prev.value : '';
+  const conv = S.cur && S.cur.conv, busy = !!S.live, k = pick(), prov = k && providerById(k.providerId), agent = currentAgent();
+  const input = h('textarea', { id: 'input', rows: 1, placeholder: prov ? 'Demander à ' + prov.name : 'Ajoute d’abord un connecteur', 'aria-label': 'Message', disabled: !prov, value: draft,
+    oninput: e => { e.target.style.height = 'auto'; e.target.style.height = e.target.scrollHeight + 'px'; slashIdx = 0; slashUpdate(e.target); },
+    onblur: () => setTimeout(() => { if (document.activeElement === $('#input')) return; const b = $('#slash'); if (b) b.classList.remove('show'); slashList = []; }, 120),
+    onkeydown: e => { if (slashKey(e, e.target)) return; if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); submit(); } } });
+  const submit = () => { const t = input.value.trim(); if (!t || S.live) return; input.value = ''; send(t); };
+  const pill = h('div', { class: 'pill' + (conv ? ' up' : '') },
+    h('div', { class: 'slash', id: 'slash', role: 'listbox', 'aria-label': 'Commandes' }),
+    h('button', { class: 'rb', type: 'button', 'data-plus': true, title: 'Choisir un agent', 'aria-label': 'Choisir un agent', onclick: e => openAgentMenu(e.currentTarget) }, icon('plus')),
+    input,
+    prov && h('button', { class: 'agent', type: 'button', 'data-pick': true, onclick: e => openModelMenu(e.currentTarget, true) }, dot(TYPEC[prov.type]), h('span', { 'data-label': true }, pickLabel())),
+    busy ? h('button', { class: 'rb send', type: 'button', title: 'Arrêter la réponse', 'aria-label': 'Arrêter la réponse', onclick: () => api('POST', `/api/conversations/${S.live.convId}/stop`).catch(e => toast(e.message)) }, icon('stop'))
+      : h('button', { class: 'rb send', type: 'button', title: 'Envoyer', 'aria-label': 'Envoyer', disabled: !prov, onclick: submit }, icon('up')));
+  const proj = S.projects.find(p => p.id === S.project);
+  put(main, 
+    h('div', { class: 'bar' },
+      (S.folded !== mobile()) && ib('panel', 'Ouvrir le panneau', fold),
+      h('button', { class: 'model', id: 'modelBtn', type: 'button', onclick: e => openModelMenu(e.currentTarget, false) }, dot(prov ? TYPEC[prov.type] : '#555'), h('span', { 'data-label': true }, pickLabel()), icon('down', 'chev')),
+      agent && h('span', { class: 'tag' }, dot(COLORS[agent.color]), agent.name, h('button', { type: 'button', title: 'Retirer l’agent', 'aria-label': 'Retirer l’agent', onclick: () => { S.draftAgent = null; renderMain(); } }, icon('x'))),
+      h('span', { class: 'sp' }),
+      conv && S.projects.length > 0 && h('select', { 'aria-label': 'Projet de la conversation', onchange: async e => { try { Object.assign(conv, await api('PATCH', '/api/conversations/' + conv.id, { projectId: e.target.value || null })); await refreshConvs(); } catch (ex) { toast(ex.message); } } },
+        h('option', { value: '' }, 'Sans projet'), S.projects.map(p => h('option', { value: p.id, selected: conv.projectId === p.id }, p.name))),
+      conv && ib('save', 'Exporter en Markdown', () => exportConv())),
+    conv
+      ? h('div', { class: 'chat', id: 'chat', onclick: e => { const b = e.target.closest('.copy'); if (!b) return; copyText(b.parentNode.querySelector('code').textContent); b.textContent = 'Copié'; setTimeout(() => { b.textContent = 'Copier'; }, 1500); } },
+          h('div', { class: 'col' }, S.cur.messages.map((m, i) => messageNode(m, !busy && i === S.cur.messages.length - 1 && m.role === 'assistant')), busy && liveNode()))
+      : h('div', { class: 'home' }, h('div', {},
+          h('h2', {}, !S.providers.length ? 'Il manque un connecteur' : proj ? proj.name : agent ? agent.name : 'On commence par quoi ?'),
+          !S.providers.length && h('p', {}, isAdmin() ? 'Un connecteur relie MuxAI à une IA : Claude Code, Codex, Ollama ou une API.' : 'Aucun connecteur n’est disponible pour ton compte. Demande à l’administrateur.'),
+          !S.providers.length && isAdmin() ? h('div', { class: 'cta' }, h('button', { class: 'btn go', type: 'button', onclick: () => go('connectors', { wiz: true }) }, 'Ajouter un connecteur')) : pill)),
+    conv && h('div', { class: 'dock' }, h('div', {}, pill, h('div', { class: 'hint' }, 'La réponse continue côté serveur même si l’onglet est fermé.'))),
+    h('div', { class: 'menu', id: 'menu' }));
+  if (conv) { const sc = $('#chat'); sc.scrollTop = sc.scrollHeight; }
+  if (draft) input.dispatchEvent(new Event('input'));
+  if (!mobile()) input.focus();
+  if (k) loadModels(k.providerId);
+}
+
+/* ───────── Conversations et flux ───────── */
+async function refreshConvs() { S.convs = await api('GET', '/api/conversations'); renderSide(); }
+function stopListening() { if (S.ac) { S.ac.abort(); S.ac = null; } }
+async function openConv(id) {
+  stopListening();
+  try {
+    const j = await api('GET', '/api/conversations/' + id);
+    S.cur = { conv: j.conv, messages: j.messages }; S.draftAgent = undefined;
+    if (providerById(j.conv.providerId)) S.pick = { providerId: j.conv.providerId, model: j.conv.model, label: j.conv.modelLabel };
+    S.live = j.conv.running ? { convId: id, text: '', tools: [], head: {} } : null;
+    go('chat');
+    if (S.live) listen(fetch(`/api/conversations/${id}/stream`, { signal: (S.ac = new AbortController()).signal }), id);
+  } catch (e) { toast(e.message); }
+}
+async function delConv(id) {
+  try {
+    await api('DELETE', '/api/conversations/' + id);
+    if (S.cur && S.cur.conv.id === id) { stopListening(); S.cur = null; S.live = null; }
+    if (S.results) S.results = S.results.filter(c => c.id !== id);
+    await refreshConvs(); renderMain();
+  } catch (e) { toast(e.message); }
+}
+function onEvent(ev, id) {
+  if (!S.live || S.live.convId !== id) return;
+  if (ev.t === 'snapshot') { S.live.text = ev.text; S.live.tools = ev.tools.slice(); S.live.head = ev.head || {}; paintLive(); }
+  else if (ev.t === 'head') { S.live.head = ev.head; delete S.models[S.cur.conv.providerId]; paintLive(); }
+  else if (ev.t === 'commands') { const p = providerById(ev.providerId); if (p) p.slash = ev.list; }
+  else if (ev.t === 'delta') { S.live.text += ev.text; paintLive(); }
+  else if (ev.t === 'tool') { S.live.tools.push(ev.tool); paintLive(); }
+  else if (ev.t === 'done') { S.cur.messages.push(ev.message); S.live = null; S.ac = null; if (S.view === 'chat') renderMain(); refreshConvs().catch(() => {}); }
+}
+async function listen(respPromise, id) {
+  try {
+    const r = await respPromise;
+    if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Erreur ' + r.status);
+    const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const block = buf.slice(0, i); buf = buf.slice(i + 2);
+        for (const l of block.split('\n')) if (l.startsWith('data: ')) onEvent(JSON.parse(l.slice(6)), id);
+      }
+    }
+    if (S.live && S.live.convId === id) setTimeout(() => openConv(id), 800); // flux coupé : on se rebranche
+  } catch (e) {
+    if (e.name === 'AbortError') return;
+    toast(e.message);
+    if (S.live && S.live.convId === id) { S.live = null; if (S.cur && S.cur.conv.id === id) openConv(id); }
+  }
+}
+async function send(text, regenerate) {
+  if (S.live) return;
+  const k = pick(); if (!k) return toast('Ajoute d’abord un connecteur');
+  const prov = providerById(k.providerId), agent = currentAgent();
+  try {
+    if (!S.cur) S.cur = { conv: await api('POST', '/api/conversations', { projectId: S.project }), messages: [] };
+    const id = S.cur.conv.id;
+    if (regenerate) while (S.cur.messages.length && S.cur.messages.at(-1).role === 'assistant') S.cur.messages.pop();
+    else S.cur.messages.push({ role: 'user', content: text, ts: Date.now() });
+    if (!S.cur.conv.title && S.cur.messages[0]) S.cur.conv.title = S.cur.messages[0].content.replace(/\s+/g, ' ').slice(0, 60);
+    Object.assign(S.cur.conv, { agentId: agent ? agent.id : null, providerId: k.providerId, model: k.model });
+    S.draftAgent = undefined;
+    S.live = { convId: id, text: '', tools: [], head: { agentName: agent ? agent.name : '', providerType: prov.type, providerName: prov.name, modelLabel: k.model ? pickLabel() : '' } };
+    if (!S.convs.some(c => c.id === id)) S.convs.unshift({ ...S.cur.conv, running: true, updatedAt: Date.now() });
+    renderSide(); renderMain();
+    stopListening();
+    listen(fetch(`/api/conversations/${id}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...(regenerate ? { regenerate: true } : { content: text }), providerId: k.providerId, model: k.model, agentId: agent ? agent.id : null }), signal: (S.ac = new AbortController()).signal }), id);
+  } catch (e) { toast(e.message); }
+}
+async function exportConv(id) {
+  let c = S.cur;
+  if (typeof id === 'string' && !(c && c.conv.id === id)) c = await api('GET', '/api/conversations/' + id);
+  if (!c) return;
+  const text = `# ${c.conv.title || 'Conversation'}\n\n` + c.messages.map(m => `## ${m.role === 'user' ? S.me.name : (m.agentName || m.modelLabel || 'Assistant')}\n\n${m.content}`).join('\n\n') + '\n';
+  const a = h('a', { href: URL.createObjectURL(new Blob([text], { type: 'text/markdown' })), download: (c.conv.title || 'conversation').replace(/[^\p{L}\p{N}]+/gu, '-').slice(0, 50) + '.md' });
+  document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ───────── Pages ───────── */
+const head = (title, addLabel, onAdd) => h('div', { class: 'ph' }, h('h2', {}, title), addLabel && h('button', { class: 'btn', type: 'button', onclick: onAdd }, icon('plus'), addLabel));
+const row = (lead, title, meta, ...right) => h('div', { class: 'row' }, lead, h('span', { class: 'n' }, h('div', {}, title), meta && h('small', {}, meta)), right);
+const back = view => () => go(view);
+async function saved(view) { await reload(); go(view); }
+const del = (label, url, view, after) => armed(label, async () => { try { await api('DELETE', url); if (after) after(); await saved(view); } catch (e) { toast(e.message); } }, '');
+const TITLES = { agents: 'Agents', connectors: 'Connecteurs', devices: 'Appareils', mcp: 'Outils MCP', github: 'GitHub', settings: 'Réglages', project: 'Projet' };
+
+const BRANDS = [
+  { k: 'claude-code', n: 'Claude Code', d: 'Ton abonnement Claude, via le CLI', type: 'claude-code', name: 'Claude', install: 'npm install -g @anthropic-ai/claude-code' },
+  { k: 'codex', n: 'Codex', d: 'Ton compte ChatGPT, via le CLI', type: 'codex', name: 'Codex', install: 'npm install -g @openai/codex' },
+  { k: 'ollama', n: 'Ollama', d: 'Modèles locaux', type: 'ollama', name: 'Ollama' },
+  { k: 'xai', n: 'Grok', d: 'API xAI, avec une clé', type: 'openai', name: 'Grok', url: 'https://api.x.ai/v1', keys: 'https://console.x.ai' },
+  { k: 'openai', n: 'OpenAI', d: 'API OpenAI, avec une clé', type: 'openai', name: 'OpenAI', url: 'https://api.openai.com/v1', keys: 'https://platform.openai.com/api-keys' },
+  { k: 'openrouter', n: 'OpenRouter', d: 'Agrégateur de modèles, avec une clé', type: 'openai', name: 'OpenRouter', url: 'https://openrouter.ai/api/v1', keys: 'https://openrouter.ai/keys' },
+  { k: 'mistral', n: 'Mistral', d: 'API Mistral, avec une clé', type: 'openai', name: 'Mistral', url: 'https://api.mistral.ai/v1', keys: 'https://console.mistral.ai/api-keys' },
+  { k: 'lmstudio', n: 'LM Studio', d: 'Modèles locaux', type: 'openai', name: 'LM Studio', url: 'http://127.0.0.1:1234/v1', nokey: true },
+];
+const brandOf = p => BRANDS.find(b => b.k === (p.brand || (isCli(p.type) || p.type === 'ollama' ? p.type : '')));
+function logo(b, cls = '') {
+  const box = h('span', { class: 'logo ' + cls });
+  if (!b) { box.textContent = '+'; return box; }
+  box.append(h('img', { src: '/api/logo?k=' + b.k, alt: '', loading: 'lazy', onerror: () => { box.textContent = b.n[0]; } }));
+  return box;
+}
+async function addProvider(body, label) {
+  const p = await api('POST', '/api/providers', body);
+  const r = await api('POST', `/api/providers/${p.id}/check`).catch(e => ({ ok: false, info: e.message }));
+  delete S.models[p.id]; await reload(); go('connectors');
+  toast(r.ok ? `${label} est prêt.` : `${label} est ajouté, mais le test a échoué : ${r.info}`);
+}
+/* L'onglet de connexion est ouvert dès le clic (sinon le navigateur le bloque), puis dirigé vers la page du service. */
+function openTab() {
+  const t = window.open('', '_blank'); if (!t) return null;
+  try { t.document.title = 'MuxAI'; t.document.body.style.cssText = 'background:#000;color:#ccc;font:16px system-ui;padding:32px'; t.document.body.textContent = 'Préparation de la page de connexion…'; } catch {}
+  return t;
+}
+const closeTab = w => { try { if (w.tab && !w.tab.closed) w.tab.close(); } catch {} w.tab = null; };
+function wizard(w) {
+  const b = BRANDS.find(x => x.k === w.brand);
+  const card = x => h('button', { class: 'card', type: 'button', onclick: () => go('connectors', { wiz: true, brand: x.k, auto: true, tab: isCli(x.type) ? openTab() : null }) }, logo(x), h('span', {}, h('b', {}, x.n), h('small', {}, x.d)));
+  const group = (title, list, extra) => [h('h3', {}, title), h('div', { class: 'cards' }, list.map(card), extra)];
+  if (!b) return [head('Ajouter un connecteur'),
+    group('Avec ton compte — une page de connexion s’ouvre', BRANDS.filter(x => isCli(x.type))),
+    group('Avec une clé API — à coller', BRANDS.filter(x => x.keys)),
+    group('En local, ou autre service', BRANDS.filter(x => !isCli(x.type) && !x.keys),
+      h('button', { class: 'card', type: 'button', onclick: () => go('connectors', { type: 'openai' }) }, logo(null), h('span', {}, h('b', {}, 'Autre'), h('small', {}, 'Toute API compatible OpenAI, réglages complets')))),
+    h('div', { class: 'form', style: 'margin-top:18px' }, h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: back('connectors') }, 'Annuler')))];
+  const title = h('div', { class: 'wh' }, logo(b), h('h2', {}, w.reconnect ? 'Reconnecter ' + b.name : b.n));
+  const status = h('p', { class: 'wstat' }), body = h('div');
+  const cancel = h('button', { class: 'btn', type: 'button', onclick: () => go('connectors', w.reconnect ? null : { wiz: true }) }, w.reconnect ? 'Annuler' : 'Retour');
+  const say = (cls, text) => { status.className = 'wstat ' + cls; status.textContent = text; };
+
+  if (b.type === 'ollama' || b.type === 'openai') {
+    const local = b.type === 'ollama' || b.nokey;
+    const f = form([
+      { k: 'baseUrl', label: 'Adresse', ph: b.url || 'http://127.0.0.1:11434' },
+      ...(local ? [] : [{ k: 'apiKey', label: 'Clé API', type: 'password', ac: 'new-password', hint: 'Stockée sur le serveur, jamais renvoyée au navigateur.' }]),
+    ], { baseUrl: b.url || 'http://127.0.0.1:11434' }, { submit: 'Ajouter ' + b.name, extra: [b.keys && h('a', { class: 'btn', href: b.keys, target: '_blank', rel: 'noopener noreferrer' }, 'Obtenir une clé'), cancel],
+      onSubmit: async v => { if (!local && !v.apiKey) throw new Error('Colle ta clé API.'); await addProvider({ type: b.type, brand: b.k, name: b.name, ...v }, b.name); } });
+    if (b.type === 'ollama') {
+      say('', 'Recherche d’Ollama sur ce serveur…');
+      api('POST', '/api/detect', { brand: 'ollama' }).then(j => { if (j.ok) { f.elements.baseUrl.value = j.baseUrl; say('ok', `Ollama détecté : ${j.info}.`); } else say('', 'Ollama n’a pas été trouvé sur ce serveur. Indique son adresse.'); }).catch(() => say('', 'Indique l’adresse du serveur Ollama.'));
+    } else say('', local ? 'Lance le serveur local de LM Studio, puis ajoute le connecteur.' : `Ce service se connecte avec une clé API, pas avec une page de connexion. Crée-la sur le site de ${b.n}, puis colle-la ici.`);
+    return [title, status, f];
+  }
+
+  // CLI : détection, puis connexion du compte
+  let deviceId = '', loginId = null, timer = null;
+  const where = () => (deviceId ? 'sur ' + S.devices.find(d => d.id === deviceId).name : 'sur ce serveur');
+  const stop = () => { clearInterval(timer); timer = null; if (loginId) { api('POST', '/api/login/cancel', { id: loginId }).catch(() => {}); loginId = null; } };
+  const finish = async lid => {
+    say('', 'Vérification avec un vrai message…'); put(body);
+    try {
+      if (w.reconnect) {
+        await api('PATCH', '/api/providers/' + w.reconnect, { loginId: lid });
+        const r = await api('POST', `/api/providers/${w.reconnect}/check`);
+        await reload(); go('connectors'); toast(r.ok ? b.name + ' est reconnecté.' : 'Le test a échoué : ' + r.info);
+      } else await addProvider({ type: b.type, brand: b.k, name: b.name, deviceId, loginId: lid }, b.name);
+    } catch (e) { say('ko', e.message); put(body, h('div', { class: 'form' }, h('div', { class: 'actions' }, cancel))); }
+  };
+  const login = async () => {
+    const codex = b.type === 'codex';
+    const link = h('a', { class: 'btn', target: '_blank', rel: 'noopener noreferrer', 'aria-disabled': 'true' }, 'Rouvrir la page de connexion');
+    const code = h('input', { placeholder: codex ? 'http://localhost:1455/auth/callback?code=…' : 'Code affiché à la fin de la connexion', 'aria-label': codex ? 'Adresse de la page finale' : 'Code de connexion', autocomplete: 'off', spellcheck: false });
+    const out = h('pre', {}, '');
+    const sendCode = async () => { if (!code.value.trim() || !loginId) return; try { await api('POST', '/api/login/input', { id: loginId, text: code.value.trim() }); code.value = ''; say('', 'Bien reçu, attente de la confirmation…'); } catch (e) { say('ko', e.message); } };
+    code.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendCode(); } });
+    say('', 'Préparation de la connexion…');
+    put(body, h('ol', { class: 'steps' },
+      h('li', {}, h('span', {}, 'Connecte-toi à ton compte dans l’onglet qui s’ouvre.'), h('div', { class: 'line' }, link)),
+      h('li', {}, h('span', {}, codex ? 'À la fin, si la page affiche une erreur du type « localhost est inaccessible », copie son adresse complète (barre d’adresse) et colle-la ici. Si la page confirme la connexion, il n’y a rien à coller.' : 'À la fin, la page affiche un code : copie-le et colle-le ici.'),
+        h('div', { class: 'line' }, code, h('button', { class: 'btn go', type: 'button', onclick: sendCode }, 'Valider')))),
+      h('details', { class: 'out' }, h('summary', {}, 'Voir ce que répond le CLI'), out),
+      h('div', { class: 'form', style: 'margin-top:16px' }, h('div', { class: 'actions' },
+        !w.reconnect && h('button', { class: 'btn', type: 'button', onclick: () => { stop(); closeTab(w); finish(null); } }, 'Déjà connecté sur ce serveur : ajouter sans me reconnecter'),
+        !w.reconnect && S.devices.length > 0 && h('button', { class: 'btn', type: 'button', onclick: () => { stop(); closeTab(w); detect(); } }, 'Utiliser un appareil'),
+        h('button', { class: 'btn', type: 'button', onclick: () => { stop(); closeTab(w); go('connectors', w.reconnect ? null : { wiz: true }); } }, 'Annuler'))));
+    try { loginId = (await api('POST', '/api/login/start', { type: b.type })).id; } catch (e) { closeTab(w); return say('ko', e.message); }
+    timer = setInterval(async () => {
+      if (!document.body.contains(body)) return stop();
+      let j; try { j = await api('GET', '/api/login/state?id=' + loginId); } catch { return; }
+      out.textContent = j.output;
+      if (j.url && link.getAttribute('aria-disabled')) {
+        link.href = j.url; link.removeAttribute('aria-disabled');
+        let opened = false;
+        try { if (w.tab && !w.tab.closed) { w.tab.opener = null; w.tab.location.href = j.url; opened = true; } } catch {}
+        w.tab = null;
+        if (!opened) { link.className = 'btn go'; link.textContent = 'Ouvrir la page de connexion'; }
+        say('', opened ? 'La page de connexion est ouverte dans un autre onglet.' : 'Ton navigateur a bloqué l’ouverture de l’onglet : clique sur « Ouvrir la page de connexion ».');
+      }
+      if (j.status === 'done') { const id = loginId; loginId = null; clearInterval(timer); finish(id); }
+      else if (j.status === 'error') { loginId = null; clearInterval(timer); closeTab(w); say('ko', 'La connexion a échoué : ' + j.error); }
+    }, 1000);
+  };
+  const detect = async () => {
+    put(body); say('', `Recherche de ${b.n} ${where()}…`);
+    const j = await api('POST', '/api/detect', { brand: b.k, deviceId }).catch(e => ({ ok: false, info: e.message }));
+    const pickDevice = !w.reconnect && S.devices.length > 0 && h('div', { class: 'form', style: 'margin-bottom:16px' }, h('label', {}, 'Où tourne ' + b.n + ' ?', h('select', { onchange: e => { deviceId = e.target.value; detect(); } },
+      h('option', { value: '' }, 'Sur ce serveur'), S.devices.map(d => h('option', { value: d.id, selected: d.id === deviceId }, `Sur l’appareil ${d.name}${d.online ? '' : ' (hors ligne)'}`)))));
+    if (!j.ok) {
+      closeTab(w);
+      say('ko', `${b.n} est introuvable ${where()} : ${j.info}`);
+      return put(body, pickDevice, h('p', { class: 'wstat' }, 'Installe-le sur cette machine, puis réessaie :'), h('div', { class: 'cmd' }, b.install),
+        h('div', { class: 'form' }, h('div', { class: 'actions' }, h('button', { class: 'btn go', type: 'button', onclick: detect }, 'Réessayer'), cancel)));
+    }
+    if (w.auto && !deviceId) { w.auto = false; return login(); }
+    closeTab(w);
+    say('ok', `${b.n} détecté ${where()} (${j.info}).`);
+    put(body, pickDevice,
+      deviceId ? h('p', { class: 'wstat' }, 'Sur un appareil, le CLI doit déjà être connecté à ton compte (lance-le une fois sur ce poste).') : null,
+      h('div', { class: 'form' }, h('div', { class: 'actions' },
+        !deviceId && h('button', { class: 'btn go', type: 'button', onclick: login }, 'Se connecter à mon compte'),
+        !w.reconnect && h('button', { class: 'btn' + (deviceId ? ' go' : ''), type: 'button', onclick: () => finish(null) }, deviceId ? 'Ajouter ' + b.name : 'Déjà connecté sur ce serveur'),
+        cancel)));
+  };
+  detect();
+  return [title, status, body];
+}
+
+/* Contrôle à distance d'une session Claude Code depuis claude.ai/code */
+function remotePage(w) {
+  const p = providerById(w.remote); if (!p) return [head('Contrôle à distance')];
+  const proj = S.projects.find(x => x.id === S.project);
+  const status = h('p', { class: 'wstat' }, 'Vérification…'), body = h('div'), out = h('pre', {}, '');
+  const call = body => api('POST', `/api/providers/${p.id}/remote`, body);
+  let last = '';
+  const draw = j => {
+    out.textContent = j.output || '';
+    const key = j.status + '|' + j.url + '|' + (j.ask || ''); if (key === last) return; last = key;
+    const actions = (...b) => h('div', { class: 'form', style: 'margin-top:16px' }, h('div', { class: 'actions' }, b, h('button', { class: 'btn', type: 'button', onclick: back('connectors') }, 'Retour')));
+    const start = h('button', { class: 'btn go', type: 'button', onclick: async () => { status.className = 'wstat'; status.textContent = 'Démarrage…'; try { draw(await call({ action: 'start', cwd: proj && proj.cwd, label: proj && proj.name })); } catch (e) { status.className = 'wstat ko'; status.textContent = e.message; } } }, j.status === 'error' ? 'Relancer' : 'Démarrer le contrôle à distance');
+    const stopBtn = h('button', { class: 'btn', type: 'button', onclick: async () => { draw(await call({ action: 'stop' })); } }, 'Arrêter');
+    const answer = h('input', { placeholder: 'Répondre au CLI (ex. y)', 'aria-label': 'Réponse au CLI', autocomplete: 'off' });
+    const reply = h('div', { class: 'steps' }, h('div', { class: 'line' }, answer, h('button', { class: 'btn', type: 'button', onclick: async () => { await call({ action: 'input', text: answer.value }); answer.value = ''; } }, 'Envoyer'), h('button', { class: 'btn', type: 'button', title: 'Envoie la touche Entrée au CLI', onclick: () => call({ action: 'input', text: '' }) }, 'Entrée')));
+    const log = h('details', { class: 'out', open: j.status !== 'on' && j.status !== 'off', style: 'margin-top:14px' }, h('summary', {}, 'Voir ce que répond le CLI'), out);
+    if (j.status === 'off') { status.className = 'wstat'; status.textContent = `Lance une session ${p.name} sur ce serveur, visible et pilotable depuis claude.ai/code et l’app mobile.${proj && proj.cwd ? ' Dossier : ' + proj.cwd : ''}`; put(body, actions(start)); }
+    else if (j.status === 'on') { status.className = 'wstat ok'; status.textContent = 'Session active.'; put(body, h('div', { class: 'cmd' }, j.url), actions(h('a', { class: 'btn go', href: j.url, target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir dans claude.ai/code'), h('button', { class: 'btn', type: 'button', onclick: e => { copyText(j.url); e.target.textContent = 'Copié'; } }, 'Copier le lien'), stopBtn), h('div', { style: 'margin-top:16px' }, reply), log); }
+    else if (j.status === 'starting' && j.ask) {
+      status.className = 'wstat'; status.textContent = 'Claude Code demande une confirmation avant de démarrer.';
+      put(body, h('ol', { class: 'steps' }, h('li', { style: 'counter-increment:none' }, h('div', {}, 'Faire confiance à ce dossier ? Les sessions lancées ici pourront y lire, modifier et exécuter des fichiers.'), h('div', { class: 'cmd', style: 'margin:0' }, j.ask),
+        h('div', { class: 'line' }, h('button', { class: 'btn go', type: 'button', onclick: async () => { status.textContent = 'Démarrage…'; draw(await call({ action: 'input', text: 'y' })); } }, 'Oui, démarrer la session'), h('button', { class: 'btn', type: 'button', onclick: async () => { draw(await call({ action: 'stop' })); } }, 'Non, annuler')))), log);
+    }
+    else if (j.status === 'starting') { status.className = 'wstat'; status.textContent = 'Démarrage… Regarde ce que répond le CLI ci-dessous : s’il pose une question, réponds-lui (souvent « y », ou simplement Entrée).'; put(body, reply, log, actions(stopBtn)); }
+    else {
+      status.className = 'wstat ko';
+      const needLogin = /auth login|must be logged in/i.test(j.error + ' ' + (j.output || ''));
+      status.textContent = needLogin ? 'Claude Code doit être connecté à ton compte claude.ai sur ce serveur pour le contrôle à distance.' : 'Le contrôle à distance s’est arrêté : ' + j.error;
+      put(body, log, actions(needLogin && h('button', { class: 'btn go', type: 'button', onclick: () => signIn(openTab()) }, 'Se connecter à claude.ai'), needLogin ? h('button', { class: 'btn', type: 'button', onclick: () => start.click() }, 'Relancer') : start));
+    }
+  };
+  // Connexion complète du CLI (claude auth login), guidée comme pour l'ajout d'un connecteur.
+  let signing = false;
+  const signIn = async tab => {
+    signing = true;
+    const link = h('a', { class: 'btn', target: '_blank', rel: 'noopener noreferrer', 'aria-disabled': 'true' }, 'Rouvrir la page de connexion');
+    const code = h('input', { placeholder: 'Code affiché à la fin de la connexion', 'aria-label': 'Code de connexion', autocomplete: 'off', spellcheck: false });
+    const lout = h('pre', {}, '');
+    let id = null;
+    const end = msg => { clearInterval(lt); signing = false; last = ''; try { if (tab && !tab.closed) tab.close(); } catch {} if (msg) { status.className = 'wstat ko'; status.textContent = msg; } };
+    const sendCode = async () => { if (!code.value.trim() || !id) return; try { await api('POST', '/api/login/input', { id, text: code.value.trim() }); code.value = ''; status.textContent = 'Bien reçu, attente de la confirmation…'; } catch (e) { status.textContent = e.message; } };
+    status.className = 'wstat'; status.textContent = 'Préparation de la connexion…';
+    put(body, h('ol', { class: 'steps' },
+      h('li', {}, h('span', {}, 'Connecte-toi à ton compte claude.ai dans l’onglet qui s’ouvre.'), h('div', { class: 'line' }, link)),
+      h('li', {}, h('span', {}, 'Si la page affiche un code à la fin, copie-le et colle-le ici. Sinon, attends : MuxAI détecte la fin de la connexion.'), h('div', { class: 'line' }, code, h('button', { class: 'btn go', type: 'button', onclick: sendCode }, 'Valider')))),
+      h('details', { class: 'out' }, h('summary', {}, 'Voir ce que répond le CLI'), lout),
+      h('div', { class: 'form', style: 'margin-top:16px' }, h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => { if (id) api('POST', '/api/login/cancel', { id }).catch(() => {}); end(); tick(); } }, 'Annuler'))));
+    let lt = null;
+    try { id = (await api('POST', '/api/login/start', { type: 'claude-code', mode: 'auth' })).id; } catch (e) { return end(e.message); }
+    lt = setInterval(async () => {
+      if (!document.body.contains(body)) { api('POST', '/api/login/cancel', { id }).catch(() => {}); return end(); }
+      let j; try { j = await api('GET', '/api/login/state?id=' + id); } catch { return; }
+      lout.textContent = j.output;
+      if (j.url && link.getAttribute('aria-disabled')) {
+        link.href = j.url; link.removeAttribute('aria-disabled');
+        let opened = false; try { if (tab && !tab.closed) { tab.opener = null; tab.location.href = j.url; opened = true; } } catch {}
+        tab = null; if (!opened) { link.className = 'btn go'; link.textContent = 'Ouvrir la page de connexion'; }
+        status.textContent = opened ? 'La page de connexion est ouverte dans un autre onglet.' : 'Clique sur « Ouvrir la page de connexion ».';
+      }
+      if (j.status === 'done') { end(); status.textContent = 'Connecté. Démarrage du contrôle à distance…'; try { draw(await call({ action: 'start', cwd: proj && proj.cwd, label: proj && proj.name })); } catch (e) { status.textContent = e.message; } }
+      else if (j.status === 'error') end('La connexion a échoué : ' + j.error);
+    }, 1000);
+  };
+  const tick = async () => { if (!document.body.contains(body)) return clearInterval(timer); if (signing) return; try { draw(await api('GET', `/api/providers/${p.id}/remote`)); } catch {} };
+  const timer = setInterval(tick, 1500); setTimeout(tick);
+  return [h('div', { class: 'wh' }, logo(brandOf(p), ''), h('h2', {}, 'Contrôle à distance')), status, body];
+}
+
+/* Catalogue d'outils MCP prêts à ajouter. Les commandes et adresses viennent de la documentation de chaque projet. */
+const OAUTH_NEEDS = ['Node.js 22 ou plus sur la machine', 'À la première utilisation, une page s’ouvre dans le navigateur de la machine pour te connecter à ton compte'];
+const remote = (url) => ({ transport: 'stdio', command: 'npx', args: ['-y', 'mcp-remote@latest', url] }); // passerelle qui gère la connexion du compte
+const MCP_CATALOG = [
+  { k: 'blender', n: 'Blender', cat: '3D et CAO', by: 'communauté', d: 'Créer et modifier des scènes 3D', transport: 'stdio', command: 'uvx', args: ['mcp-for-blender'], src: 'https://github.com/ahujasid/blender-mcp',
+    needs: ['Blender 3.0 ou plus', 'uv, qui lance l’outil', 'Le module « MCP for Blender » dans Blender', 'À faire à la main dans Blender : cocher le module dans les préférences, puis « Start MCP Server » dans le panneau latéral (touche N)'] },
+  { k: 'fusion', n: 'Autodesk Fusion', cat: '3D et CAO', by: 'officiel', d: 'Modéliser dans Fusion', transport: 'http', url: 'http://127.0.0.1:27182/mcp', src: 'https://help.autodesk.com/cloudhelp/ENU/ADSKMCP-FusionDesktopMcp/files/ADSKMCP_FusionDesktopMcp_connecting_to_the_fusion_mcp_server_html.html',
+    needs: ['Fusion ouvert sur la machine, avec un document', 'Dans Fusion : Préférences > Général > API, cocher « Fusion MCP Server »'] },
+  { k: 'adobe', n: 'Adobe', cat: 'Design', by: 'officiel', d: 'Photoshop, Illustrator, Premiere, Express, Firefly (outils en ligne)', ...remote('https://adobe-creativity.adobe.io/mcp'), src: 'https://www.usecarly.com/blog/adobe-mcp/',
+    needs: [...OAUTH_NEEDS, 'Un compte Adobe'], note: 'Adresse relevée dans un article, pas dans la documentation d’Adobe : à confirmer au premier essai. Ne pilote pas les applications de bureau.' },
+  { k: 'canva', n: 'Canva', cat: 'Design', by: 'officiel', d: 'Créer et modifier des designs', ...remote('https://mcp.canva.com/mcp'), src: 'https://www.canva.dev/docs/connect/canva-mcp-server-setup', needs: [...OAUTH_NEEDS, 'Un compte Canva'] },
+  { k: 'figma', n: 'Figma', cat: 'Design', by: 'officiel', d: 'Lire et modifier des maquettes', ...remote('https://mcp.figma.com/mcp'), src: 'https://github.com/figma/mcp-server-guide', needs: [...OAUTH_NEEDS, 'Un compte Figma (les limites dépendent de ton offre)'] },
+  { k: 'google', n: 'Google Workspace', cat: 'Bureautique', by: 'communauté', d: 'Gmail, Agenda, Drive, Docs, Sheets, Slides', transport: 'stdio', command: 'uvx', args: ['workspace-mcp', '--tool-tier', 'core'], src: 'https://pypi.org/project/workspace-mcp/',
+    fields: [{ k: 'GOOGLE_OAUTH_CLIENT_ID', kind: 'env', label: 'Identifiant client OAuth Google' }, { k: 'GOOGLE_OAUTH_CLIENT_SECRET', kind: 'env', label: 'Secret client OAuth Google', secret: true }],
+    needs: ['uv installé sur la machine', 'Un identifiant OAuth (type « application de bureau ») créé dans Google Cloud Console, avec les API Gmail, Agenda et Drive activées'] },
+  { k: 'ms365', n: 'Microsoft 365', cat: 'Bureautique', by: 'communauté', d: 'Outlook, Agenda, OneDrive, Excel, OneNote, To Do', transport: 'stdio', command: 'npx', args: ['-y', '@softeria/ms-365-mcp-server'], src: 'https://github.com/Softeria/ms-365-mcp-server',
+    fields: [{ k: '--org-mode', kind: 'flag', label: 'Compte professionnel ou scolaire (ajoute Teams et SharePoint)' }],
+    needs: ['Node.js sur la machine', 'Connexion du compte : lance une fois « npx @softeria/ms-365-mcp-server --login » sur la machine, ou demande à l’IA d’utiliser son outil « login »'] },
+  { k: 'notion', n: 'Notion', cat: 'Bureautique', by: 'officiel', d: 'Pages et bases de données', ...remote('https://mcp.notion.com/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'airtable', n: 'Airtable', cat: 'Bureautique', by: 'officiel', d: 'Bases et enregistrements', ...remote('https://mcp.airtable.com/mcp'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'asana', n: 'Asana', cat: 'Bureautique', by: 'officiel', d: 'Tâches et projets', ...remote('https://mcp.asana.com/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'monday', n: 'monday.com', cat: 'Bureautique', by: 'officiel', d: 'Tableaux et tâches', ...remote('https://mcp.monday.com/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'github', n: 'GitHub', cat: 'Développement', by: 'officiel', d: 'Dépôts, issues, pull requests', transport: 'http', url: 'https://api.githubcopilot.com/mcp', src: 'https://github.com/jaw9c/awesome-remote-mcp-servers',
+    fields: [{ k: 'Authorization', kind: 'header', prefix: 'Bearer ', label: 'Jeton d’accès personnel GitHub', secret: true }], needs: ['Un jeton d’accès personnel GitHub (Settings > Developer settings)'] },
+  { k: 'linear', n: 'Linear', cat: 'Développement', by: 'officiel', d: 'Tickets et projets', ...remote('https://mcp.linear.app/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'atlassian', n: 'Atlassian', cat: 'Développement', by: 'officiel', d: 'Jira et Confluence', ...remote('https://mcp.atlassian.com/v1/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'sentry', n: 'Sentry', cat: 'Développement', by: 'officiel', d: 'Erreurs et performances', ...remote('https://mcp.sentry.dev/sse'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'supabase', n: 'Supabase', cat: 'Développement', by: 'officiel', d: 'Bases de données et projets', ...remote('https://mcp.supabase.com/mcp'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'vercel', n: 'Vercel', cat: 'Développement', by: 'officiel', d: 'Déploiements et projets', ...remote('https://mcp.vercel.com/'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'stripe', n: 'Stripe', cat: 'Développement', by: 'officiel', d: 'Paiements et clients', ...remote('https://mcp.stripe.com/'), src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: OAUTH_NEEDS },
+  { k: 'huggingface', n: 'Hugging Face', cat: 'Développement', by: 'officiel', d: 'Modèles, jeux de données, Spaces', transport: 'http', url: 'https://hf.co/mcp', src: 'https://github.com/jaw9c/awesome-remote-mcp-servers', needs: ['Rien à installer : accès public, sans compte'] },
+  { k: 'playwright', n: 'Navigateur (Playwright)', cat: 'Machine', by: 'officiel', d: 'Ouvrir des pages, cliquer, remplir des formulaires', transport: 'stdio', command: 'npx', args: ['@playwright/mcp@latest'], src: 'https://github.com/microsoft/playwright-mcp', needs: ['Node.js sur la machine'] },
+  { k: 'fichiers', n: 'Fichiers', cat: 'Machine', by: 'officiel', d: 'Lire et écrire dans un dossier précis', transport: 'stdio', command: 'npx', args: ['-y', '@modelcontextprotocol/server-filesystem'], src: 'https://github.com/modelcontextprotocol/servers',
+    fields: [{ k: 'dir', kind: 'arg', label: 'Dossier autorisé (chemin complet)', ph: '/Users/toi/Documents/projet' }], needs: ['Node.js sur la machine'] },
+];
+const mcpLogo = (m, cls = '') => logo(m && MCP_CATALOG.some(x => x.k === m.k) && m.k !== 'fichiers' ? { k: 'mcp-' + m.k, n: m.n } : null, cls);
+function mcpCatalog(w) {
+  if (S.mcpSetup) {
+    const o = location.origin, d = S.mcpSetup, sh = `curl -fsSL ${o}/m/${d.code} | sh`;
+    const OS = [['macOS', sh, 'Terminal'], ['Linux', sh, 'un terminal'], ['Windows', `irm ${o}/m/${d.code}.ps1 | iex`, 'PowerShell']];
+    const box = h('div'), state = h('p', { class: 'wstat', style: 'margin-top:18px' }, 'En attente de la machine…');
+    const end = async () => { S.mcpSetup = null; await saved('mcp'); };
+    const show = i => put(box,
+      h('div', { class: 'presets', role: 'tablist' }, OS.map((x, j) => h('button', { class: 'btn' + (j === i ? ' go' : ''), type: 'button', role: 'tab', 'aria-selected': String(j === i), onclick: () => show(j) }, x[0]))),
+      h('p', { class: 'wstat' }, `Colle cette commande dans ${OS[i][2]}, sur la machine où tourne le connecteur :`),
+      h('div', { class: 'cmd' }, OS[i][1]),
+      h('div', { class: 'form' }, h('div', { class: 'actions' }, h('button', { class: 'btn go', type: 'button', onclick: e => { copyText(OS[i][1]); e.target.textContent = 'Copié'; } }, 'Copier la commande'),
+        h('button', { class: 'btn', type: 'button', title: 'Ajoute l’outil sans rien vérifier ni installer', onclick: async () => { try { await api('POST', '/m/' + d.code + '/done'); await end(); toast(d.n + ' est ajouté.'); } catch (e) { toast(e.message); } } }, 'Ajouter sans la commande'),
+        h('button', { class: 'btn', type: 'button', onclick: end }, 'Terminé'))));
+    show(/Win/.test(navigator.platform) ? 2 : /Linux/.test(navigator.platform) ? 1 : 0);
+    const watch = setInterval(async () => { if (!document.body.contains(state)) return clearInterval(watch); try { const r = await api('GET', '/api/mcps/setup?c=' + d.code); if (r.done) { clearInterval(watch); state.className = 'wstat ok'; state.textContent = d.n + ' est connecté.'; } else if (r.expired) { clearInterval(watch); state.className = 'wstat ko'; state.textContent = 'La commande a expiré : recommence l’ajout.'; } } catch {} }, 2500);
+    return [h('div', { class: 'wh' }, mcpLogo(MCP_CATALOG.find(x => x.k === d.k)), h('h2', {}, 'Connecter ' + d.n)), box, state,
+      h('p', { style: 'margin-top:18px' }, 'La commande est valable 30 minutes. Elle vérifie ce qui est déjà installé sur la machine et ne le réinstalle pas. S’il manque quelque chose, elle demande avant d’installer. Ensuite elle connecte l’outil à MuxAI.')];
+  }
+  const m = MCP_CATALOG.find(x => x.k === w.pick);
+  if (!m) {
+    const cats = [...new Set(MCP_CATALOG.map(x => x.cat))];
+    return [head('Ajouter un outil MCP'), h('p', {}, 'Les outils tournent sur la machine où tourne Claude Code ou Codex : ce serveur, ou un appareil relié. Choisis un outil pour voir ce qu’il faut y installer.'),
+      cats.map(cat => [h('h3', {}, cat), h('div', { class: 'cards' }, MCP_CATALOG.filter(x => x.cat === cat).map(x => { const have = S.mcps.some(y => y.name === x.k);
+        return h('button', { class: 'card', type: 'button', onclick: () => go('mcp', { cat: true, pick: x.k }) }, mcpLogo(x), h('span', {}, h('b', {}, x.n), h('small', {}, x.d), h('small', { style: have ? 'color:var(--ok)' : '' }, have ? 'Déjà ajouté' : x.by === 'officiel' ? 'Serveur officiel' : 'Projet communautaire'))); }))]),
+      h('h3', {}, 'Autre'), h('div', { class: 'cards' }, h('button', { class: 'card', type: 'button', onclick: () => go('mcp', {}) }, logo(null), h('span', {}, h('b', {}, 'Personnalisé'), h('small', {}, 'N’importe quel serveur MCP : commande ou adresse')))),
+      h('div', { class: 'form', style: 'margin-top:18px' }, h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: back('mcp') }, 'Annuler')))];
+  }
+  const clis = S.providers.filter(p => isCli(p.type)), direct = m.transport !== 'stdio' && m.k !== 'fusion';
+  const fields = [
+    ...(m.fields || []).map(f => ({ k: 'f_' + f.k, label: f.label, type: f.kind === 'flag' ? 'checkbox' : f.secret ? 'password' : 'text', ph: f.ph, ac: 'new-password' })),
+    { k: 'on', label: 'Activer sur', type: 'checks', options: clis.map(p => [p.id, `${p.name}${p.deviceId ? ' — ' + ((S.devices.find(d => d.id === p.deviceId) || {}).name || 'appareil') : ' — ce serveur'}`]), empty: 'Aucun connecteur Claude Code ou Codex. Ajoute-en un, puis active l’outil depuis son crayon.' },
+  ];
+  const f = form(fields, { on: clis.map(p => p.id) }, { submit: direct ? 'Ajouter ' + m.n : 'Obtenir la commande', onCancel: () => go('mcp', { cat: true }),
+    onSubmit: async v => {
+      const args = [...(m.args || [])], env = [], headers = [];
+      for (const fd of m.fields || []) {
+        const val = v['f_' + fd.k];
+        if (fd.kind === 'flag') { if (val) args.push(fd.k); continue; }
+        if (!String(val).trim()) throw new Error('Remplis : ' + fd.label);
+        if (fd.kind === 'env') env.push(`${fd.k}=${val.trim()}`); else if (fd.kind === 'arg') args.push(val.trim()); else headers.push(`${fd.k}: ${fd.prefix || ''}${val.trim()}`);
+      }
+      const def = { name: m.k, brand: m.k, transport: m.transport, command: m.command || '', args: args.join('\n'), url: m.url || '', env: env.join('\n'), headers: headers.join('\n') };
+      if (!direct) { const r = await api('POST', '/api/mcps/setup', { ...def, label: m.n, on: v.on }); S.mcpSetup = { code: r.code, n: m.n, k: m.k }; renderMain(); return; }
+      const made = await api('POST', '/api/mcps', { name: m.k, brand: m.k, transport: m.transport, command: m.command || '', args: args.join('\n'), url: m.url || '', env: env.join('\n'), headers: headers.join('\n') });
+      for (const id of v.on) { const p = providerById(id); await api('PATCH', '/api/providers/' + id, { mcpIds: [...new Set([...(p.mcpIds || []), made.id])] }); }
+      await reload(); go('mcp'); toast(v.on.length ? `${m.n} est ajouté et activé sur ${v.on.length} connecteur${v.on.length > 1 ? 's' : ''}.` : `${m.n} est ajouté. Active-le sur un connecteur pour l’utiliser.`);
+    } });
+  return [h('div', { class: 'wh' }, mcpLogo(m), h('h2', {}, m.n)),
+    h('p', {}, `${m.d}. ${m.by === 'officiel' ? 'Serveur officiel.' : 'Projet communautaire, non affilié à l’éditeur.'}`),
+    m.note && h('p', { class: 'wstat' }, m.note),
+    h('h3', { style: 'margin-top:8px' }, 'Ce qu’il faut sur la machine'), h('ul', { class: 'needs' }, m.needs.map(n => h('li', {}, n))),
+    !direct && h('p', {}, 'Une commande à coller sur la machine vérifie tout ça, propose d’installer ce qui manque, puis connecte l’outil.'),
+    h('p', {}, m.transport === 'stdio' ? 'Commande lancée : ' : 'Adresse : ', h('code', { class: 'inl' }, m.transport === 'stdio' ? [m.command, ...m.args].join(' ') : m.url), ' · ', h('a', { href: m.src, target: '_blank', rel: 'noopener noreferrer' }, 'Documentation')),
+    f];
+}
+
+const pages = {
+  agents(edit) {
+    if (edit) return [head(edit.id ? 'Modifier l’agent' : 'Nouvel agent'), h('p', {}, 'Un agent est un profil : un nom et des consignes, avec éventuellement un modèle attitré.'), form([
+      { k: 'name', label: 'Nom', ph: 'ex. Relecteur de code' },
+      { k: 'color', label: 'Couleur', type: 'select', options: Object.keys(COLORS).map(c => [c, c[0].toUpperCase() + c.slice(1)]) },
+      { k: 'system', label: 'Consignes', type: 'textarea', rows: 8, ph: 'Rôle, ton, règles à suivre…' },
+      { k: 'providerId', label: 'Connecteur attitré', type: 'select', options: [['', 'Aucun — je choisis le modèle au moment du message'], ...S.providers.map(p => [p.id, p.name])] },
+      { k: 'model', label: 'Modèle attitré', ph: 'identifiant du modèle ; vide = modèle par défaut', hint: 'Utilisé seulement si un connecteur attitré est choisi.' },
+      ...(isAdmin() ? [{ k: 'shared', label: 'Partager avec tous les comptes', type: 'checkbox' }] : []),
+    ], edit, { submit: edit.id ? 'Enregistrer' : 'Créer l’agent', onCancel: back('agents'), onSubmit: async v => { await api(edit.id ? 'PATCH' : 'POST', '/api/agents' + (edit.id ? '/' + edit.id : ''), v); await saved('agents'); } })];
+    return [head('Agents', 'Nouvel agent', () => go('agents', {})), h('p', {}, 'Des profils d’IA avec leurs propres consignes. Lance un chat avec un agent, ou choisis-le avec le « + » de la barre de saisie.'),
+      S.agents.length ? S.agents.map(a => { const p = providerById(a.providerId); return row(dot(COLORS[a.color]), a.name, [p ? p.name + (a.model ? ' · ' + a.model : '') : 'modèle libre', a.shared && 'partagé', !a.mine && 'lecture seule'].filter(Boolean).join(' · '),
+        h('button', { class: 'btn', type: 'button', onclick: () => newChat(a.id) }, 'Discuter'), a.mine && ib('pen', 'Modifier', () => go('agents', a)), a.mine && del('Supprimer l’agent', '/api/agents/' + a.id, 'agents')); })
+        : h('div', { class: 'none' }, 'Aucun agent pour l’instant.')];
+  },
+
+  project(edit) {
+    edit = edit || {};
+    const ghOn = isAdmin() && S.github && S.github.connected;
+    if (ghOn && S.ghAllowed === undefined) { S.ghAllowed = null; api('GET', '/api/github/allowed').then(l => { S.ghAllowed = l; if (S.view === 'project') renderMain(); }).catch(() => { S.ghAllowed = []; }); }
+    return [head(edit.id ? 'Modifier le projet' : 'Nouveau projet'), h('p', {}, 'Les instructions et le contexte sont transmis à l’IA dans chaque conversation du projet.'), form([
+      { k: 'name', label: 'Nom', ph: 'ex. HomeLab' },
+      { k: 'instructions', label: 'Instructions', type: 'textarea', rows: 5, ph: 'Comment l’IA doit travailler dans ce projet.' },
+      { k: 'context', label: 'Contexte', type: 'textarea', rows: 9, ph: 'Notes, documentation, décisions, extraits de code…' },
+      ...(ghOn && S.ghAllowed && S.ghAllowed.length ? [{ k: 'repo', label: 'Dépôt GitHub', type: 'select', options: [['', 'Aucun'], ...S.ghAllowed.map(r => [r, r])], hint: 'Le dépôt est copié sur le serveur et devient le dossier de travail du projet. Les IA peuvent y pousser leurs modifications.' }] : []),
+      ...(isAdmin() ? [{ k: 'cwd', label: 'Dossier de travail', ph: '/chemin/absolu/du/projet', hint: 'Dossier dans lequel Claude Code et Codex s’exécutent pour ce projet (sur le serveur, ou sur l’appareil si le connecteur tourne sur un appareil).' }] : []),
+    ], edit, { submit: edit.id ? 'Enregistrer' : 'Créer le projet', onCancel: back('chat'),
+      extra: edit.id && del('Supprimer le projet', '/api/projects/' + edit.id, 'chat', () => { if (S.project === edit.id) S.project = null; }),
+      onSubmit: async v => { if (v.repo && v.repo !== edit.repo) v.cwd = (await api('POST', '/api/github/clone', { repo: v.repo })).dir; await api(edit.id ? 'PATCH' : 'POST', '/api/projects' + (edit.id ? '/' + edit.id : ''), v); await saved('chat'); } })];
+  },
+
+  connectors(edit) {
+    if (edit && edit.wiz) return wizard(edit);
+    if (edit && edit.remote) return remotePage(edit);
+    if (edit) {
+      const type = edit.type || 'claude-code', cli = isCli(type);
+      const fields = [
+        ...(edit.id ? [] : [{ k: 'type', label: 'Type', type: 'select', options: Object.entries(TYPES), onchange: e => go('connectors', { type: e.target.value }) }]),
+        { k: 'name', label: 'Nom affiché', ph: { 'claude-code': 'Claude', codex: 'Codex', ollama: 'Ollama', openai: 'ex. Grok' }[type] },
+      ];
+      if (cli) {
+        fields.push({ k: 'deviceId', label: 'S’exécute sur', type: 'select', options: [['', 'Ce serveur'], ...S.devices.map(d => [d.id, `Appareil : ${d.name}${d.online ? '' : ' (hors ligne)'}`])], hint: 'Choisis un appareil pour piloter le CLI installé sur un autre poste, avec ses fichiers et ses outils MCP.' });
+        fields.push({ k: 'command', label: 'Commande', ph: type === 'codex' ? 'codex' : 'claude', hint: 'Nom ou chemin complet du CLI sur la machine qui l’exécute.' });
+        fields.push({ k: 'env', label: 'Connexion du compte (variables d’environnement)', type: 'textarea', rows: 2, code: true, ph: type === 'codex' ? 'OPENAI_API_KEY=…' : 'CLAUDE_CODE_OAUTH_TOKEN=…',
+          hint: (type === 'codex' ? 'Facultatif si « codex login » a déjà été fait sur la machine.' : 'Facultatif si le CLI est déjà connecté sur la machine. Pour reconnecter sans terminal : lance « claude setup-token » une fois et colle ici le jeton obtenu.') + ' Une ligne NOM=valeur. Les valeurs ne sont jamais réaffichées.' });
+        if (type === 'claude-code') fields.push({ k: 'permissionMode', label: 'Permissions', type: 'select', options: [['default', 'Par défaut — les outils sensibles sont refusés'], ['acceptEdits', 'Accepter les modifications de fichiers'], ['plan', 'Plan — aucune modification'], ['bypassPermissions', 'Tout autoriser sans demander (risqué)']] });
+        else fields.push({ k: 'sandbox', label: 'Bac à sable', type: 'select', options: [['', 'Réglage par défaut de Codex'], ['read-only', 'Lecture seule'], ['workspace-write', 'Écriture dans le dossier de travail'], ['danger-full-access', 'Accès complet (risqué)']] });
+        fields.push({ k: 'mcpIds', label: 'Outils MCP activés', type: 'checks', options: S.mcps.map(m => [m.id, m.name]), empty: 'Aucun outil MCP défini. Ajoute-les dans « Outils MCP ».' });
+        fields.push({ k: 'apiKey', label: 'Clé API pour charger la liste des modèles', type: 'password', ac: 'new-password', ph: edit.hasKey ? 'Clé enregistrée — laisser vide pour la garder' : 'facultatif', hint: `Sert uniquement à lister les modèles ${type === 'codex' ? 'OpenAI' : 'Anthropic'} à jour. Les messages passent toujours par le CLI.` });
+        fields.push({ k: 'models', label: 'Liste manuelle des modèles', type: 'textarea', rows: 3, code: true, ph: type === 'codex' ? 'identifiant = Nom affiché' : 'opus\nsonnet\nhaiku', hint: 'Utilisée sans clé API. Un modèle par ligne : identifiant, ou « identifiant = Nom affiché ».' });
+        fields.push({ k: 'extraArgs', label: 'Arguments supplémentaires', ph: 'facultatif' });
+      } else {
+        fields.push({ k: 'baseUrl', label: 'URL de base', list: 'urls', ph: type === 'ollama' ? 'http://127.0.0.1:11434' : 'https://api.x.ai/v1', hint: type === 'ollama' ? 'Adresse du serveur Ollama, sans /api.' : 'Se termine en général par /v1. Fonctionne avec xAI (Grok), OpenAI, OpenRouter, Mistral, LM Studio…' });
+        fields.push({ k: 'apiKey', label: 'Clé API', type: 'password', ac: 'new-password', ph: edit.hasKey ? 'Clé enregistrée — laisser vide pour la garder' : type === 'ollama' ? 'facultatif' : '', hint: 'Stockée sur le serveur, jamais renvoyée au navigateur.' });
+      }
+      fields.push({ k: 'adminOnly', label: 'Réservé aux administrateurs', type: 'checkbox', hint: cli ? 'recommandé : ce CLI peut exécuter des commandes sur la machine' : '' });
+      const f = form(fields, { adminOnly: cli, ...edit, type, extraArgs: (edit.extraArgs || []).join(' ') }, { submit: edit.id ? 'Enregistrer' : 'Ajouter le connecteur', onCancel: back('connectors'),
+        onSubmit: async v => { const r = await api(edit.id ? 'PATCH' : 'POST', '/api/providers' + (edit.id ? '/' + edit.id : ''), { ...v, type }); delete S.models[r.id]; await saved('connectors'); } });
+      if (type === 'openai') f.append(h('datalist', { id: 'urls' }, ['https://api.x.ai/v1', 'https://api.openai.com/v1', 'https://openrouter.ai/api/v1', 'https://api.mistral.ai/v1', 'http://127.0.0.1:1234/v1'].map(u => h('option', { value: u }))));
+      return [head(edit.id ? 'Modifier le connecteur' : 'Nouveau connecteur'), f];
+    }
+    return [head('Connecteurs', 'Ajouter un connecteur', () => go('connectors', { wiz: true })), h('p', {}, 'Seuls les connecteurs configurés ici apparaissent dans le choix du modèle.'),
+      S.providers.length ? S.providers.map(p => {
+        const d = S.devices.find(x => x.id === p.deviceId), st = h('span', { class: 'st' }, 'Test…');
+        const test = async fresh => { st.className = 'st'; st.textContent = 'Test…'; const j = await loadModels(p.id, fresh); st.className = 'st ' + (j.ok ? 'ok' : 'ko'); st.textContent = j.ok ? 'Connecté' : 'Injoignable'; st.title = j.info || ''; if (!j.ok && fresh) toast(j.info); };
+        test(false);
+        return row(logo(brandOf(p) || { k: '', n: p.name }, 'sm'), p.name, [TYPES[p.type], isCli(p.type) ? (d ? 'sur ' + d.name : 'sur ce serveur') : p.baseUrl, (p.mcpIds || []).length && `${p.mcpIds.length} MCP`, p.adminOnly && 'admins'].filter(Boolean).join(' · '),
+          st, h('button', { class: 'btn', type: 'button', onclick: () => test(true) }, 'Tester'),
+          isCli(p.type) && ib('dots', 'Autres actions', e => { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); popMenu(r.left - 200, r.bottom + 4, [
+            !p.deviceId && ['out', 'Reconnecter le compte', () => go('connectors', { wiz: true, brand: p.type, reconnect: p.id, auto: true, tab: openTab() })],
+            p.type === 'claude-code' && ['redo', 'Mettre à jour Claude Code', async () => {
+              st.className = 'st'; st.textContent = 'Mise à jour…';
+              const u = await api('POST', `/api/providers/${p.id}/update`).catch(ex => ({ ok: false, info: ex.message }));
+              toast(u.ok ? `Claude Code est à jour${u.version ? ' : ' + u.version : ''}` : 'Mise à jour impossible : ' + u.info); test(true);
+            }],
+            p.type === 'claude-code' && !p.deviceId && ['screen', 'Contrôle à distance (claude.ai/code)', () => go('connectors', { remote: p.id })],
+          ]); }), ib('pen', 'Modifier', () => go('connectors', p)), del('Supprimer le connecteur', '/api/providers/' + p.id, 'connectors'));
+      }) : h('div', { class: 'none' }, 'Aucun connecteur pour l’instant.')];
+  },
+
+  devices(edit) {
+    if (S.newDevice) {
+      const o = location.origin, d = S.newDevice;
+      const OS = [['macOS', `curl -fsSL ${o}/i/${d.code} | sh`, 'Terminal'], ['Linux', `curl -fsSL ${o}/i/${d.code} | sh`, 'un terminal'], ['Windows', `irm ${o}/i/${d.code}.ps1 | iex`, 'PowerShell']];
+      const guess = /Win/.test(navigator.platform) ? 2 : /Linux/.test(navigator.platform) ? 1 : 0;
+      const box = h('div');
+      const show = i => put(box,
+        h('div', { class: 'presets', role: 'tablist' }, OS.map((x, j) => h('button', { class: 'btn' + (j === i ? ' go' : ''), type: 'button', role: 'tab', 'aria-selected': String(j === i), onclick: () => show(j) }, x[0]))),
+        h('p', { class: 'wstat' }, `Colle cette commande dans ${OS[i][2]} sur l’appareil :`),
+        h('div', { class: 'cmd' }, OS[i][1]),
+        h('div', { class: 'form' }, h('div', { class: 'actions' }, h('button', { class: 'btn go', type: 'button', onclick: e => { copyText(OS[i][1]); e.target.textContent = 'Copié'; } }, 'Copier la commande'), h('button', { class: 'btn', type: 'button', onclick: () => saved('devices') }, 'Terminé'))));
+      show(guess);
+      const state = h('p', { class: 'wstat', style: 'margin-top:18px' }, 'En attente de l’appareil…');
+      const watch = setInterval(async () => { if (!document.body.contains(state)) return clearInterval(watch); try { const l = await api('GET', '/api/devices'); if ((l.find(x => x.id === d.id) || {}).online) { clearInterval(watch); state.className = 'wstat ok'; state.textContent = 'Appareil relié et en ligne.'; } } catch {} }, 2500);
+      return [head(`Relier « ${d.name} »`),
+        (location.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(location.hostname)) && h('p', { class: 'wstat ko' }, 'Ce serveur n’est pas en HTTPS : le jeton de l’appareil circulerait en clair. Mets MuxAI derrière un nom de domaine en HTTPS avant de relier un appareil hors de ton réseau.'),
+        box, state,
+        h('p', { style: 'margin-top:18px' }, 'La commande est valable 30 minutes. Elle demande Node.js 20 ou plus, installe un petit agent dans le dossier .muxai de l’utilisateur et le relance à chaque ouverture de session. L’agent tourne en arrière-plan, terminal fermé, et repart après un redémarrage. Il n’exécute que « claude » et « codex ». Sur l’appareil, « muxai stop » le coupe (il ne repart pas tout seul), « muxai start » le relance, « muxai remove » le retire.')];
+    }
+    if (edit) return [head('Nouvel appareil'), h('p', {}, 'Un appareil est un autre poste (Mac, Linux, Windows) sur lequel MuxAI pilote Claude Code ou Codex.'), form([{ k: 'name', label: 'Nom', ph: 'ex. MacBook' }], {}, { submit: 'Créer l’appareil', onCancel: back('devices'),
+      onSubmit: async v => { S.newDevice = await api('POST', '/api/devices', v); S.edit = null; renderMain(); } })];
+    return [head('Appareils', 'Nouvel appareil', () => go('devices', {})), h('p', {}, 'Un petit programme tourne sur l’appareil et se connecte à ce serveur : rien à ouvrir sur le poste. MuxAI peut alors y lancer Claude Code ou Codex, avec ses fichiers et ses outils MCP.'),
+      S.devices.length ? S.devices.map(d => row(dot(d.online ? '#3ecf8e' : '#555'), d.name, [d.info.hostname, d.info.platform, ...(d.info.clis || [])].filter(Boolean).join(' · ') || 'jamais connecté',
+        h('span', { class: 'st' + (d.online ? ' ok' : '') }, d.online ? 'En ligne' : 'Hors ligne'), h('button', { class: 'btn', type: 'button', title: 'Génère une nouvelle commande ; l’ancienne liaison cesse de fonctionner', onclick: async () => { try { S.newDevice = await api('POST', `/api/devices/${d.id}/link`); renderMain(); } catch (e) { toast(e.message); } } }, 'Relier à nouveau'), del('Supprimer l’appareil', '/api/devices/' + d.id, 'devices')))
+        : h('div', { class: 'none' }, 'Aucun appareil pour l’instant.'),
+      S.devices.length > 0 && h('div', { class: 'form', style: 'margin-top:16px' }, h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => saved('devices') }, 'Actualiser')))];
+  },
+
+  mcp(edit) {
+    if (edit && edit.cat) return mcpCatalog(edit);
+    if (edit) {
+      const http = edit.transport === 'http' || edit.transport === 'sse';
+      const preset = (label, v) => h('button', { class: 'btn', type: 'button', onclick: () => go('mcp', v) }, label);
+      return [head(edit.id ? 'Modifier l’outil MCP' : 'Nouvel outil MCP'),
+        h('p', {}, 'Le serveur MCP est lancé par le CLI, sur la machine où il tourne (ce serveur ou un appareil). Le programme indiqué doit y être installé.'),
+        form([
+          { k: 'name', label: 'Nom', ph: 'ex. blender', hint: 'Lettres, chiffres et tirets.' },
+          { k: 'transport', label: 'Type', type: 'select', options: [['stdio', 'Programme local (stdio)'], ['http', 'Serveur HTTP'], ['sse', 'Serveur SSE']], onchange: e => go('mcp', { ...edit, transport: e.target.value }) },
+          ...(http ? [{ k: 'url', label: 'URL', ph: 'https://exemple.fr/mcp' }, { k: 'headers', label: 'En-têtes HTTP', type: 'textarea', rows: 2, code: true, ph: 'Authorization: Bearer …', hint: 'Facultatif. Une ligne « Nom: valeur ». Les valeurs ne sont jamais réaffichées.' }] : [
+            { k: 'command', label: 'Commande', ph: 'ex. uvx' },
+            { k: 'args', label: 'Arguments', type: 'textarea', rows: 3, code: true, ph: 'un argument par ligne' },
+            { k: 'env', label: 'Variables d’environnement', type: 'textarea', rows: 2, code: true, ph: 'NOM=valeur', hint: 'Les valeurs ne sont jamais réaffichées.' }]),
+        ], { transport: 'stdio', ...edit, args: (edit.args || []).join('\n') }, { submit: edit.id ? 'Enregistrer' : 'Ajouter l’outil', onCancel: back('mcp'),
+          onSubmit: async v => { await api(edit.id ? 'PATCH' : 'POST', '/api/mcps' + (edit.id ? '/' + edit.id : ''), v); await saved('mcp'); } }),
+        edit.name === 'blender' && h('p', { style: 'margin-top:16px' }, 'Blender : il faut aussi installer et démarrer le module complémentaire « Blender MCP » dans Blender, sur le même poste.')];
+    }
+    return [head('Outils MCP', 'Ajouter un outil', () => go('mcp', { cat: true })), h('p', {}, 'Des outils que Claude Code et Codex peuvent utiliser : Blender, fichiers, navigateur… Définis-les ici, puis active-les dans un connecteur.'),
+      S.mcps.length ? S.mcps.map(m => { const n = S.providers.filter(p => (p.mcpIds || []).includes(m.id)).length; return row(mcpLogo(MCP_CATALOG.find(x => x.k === (m.brand || m.name)), 'sm'), (MCP_CATALOG.find(x => x.k === (m.brand || m.name)) || { n: m.name }).n, m.transport === 'stdio' ? [m.command, ...(m.args || [])].join(' ') : m.url,
+        h('span', { class: 'st' + (n ? ' ok' : '') }, n ? `Activé sur ${n} connecteur${n > 1 ? 's' : ''}` : 'Non activé'), ib('pen', 'Modifier', () => go('mcp', m)), del('Supprimer l’outil', '/api/mcps/' + m.id, 'mcp')); })
+        : h('div', { class: 'none' }, 'Aucun outil MCP pour l’instant.')];
+  },
+
+  github() {
+    const g = S.github || {};
+    if (!g.connected) return [head('GitHub'), h('p', {}, 'Connecte ton compte GitHub, puis choisis les organisations et les dépôts sur lesquels les IA peuvent travailler. Rien n’est ouvert par défaut.'),
+      form([{ k: 'token', label: 'Jeton d’accès GitHub', type: 'password', ac: 'new-password', hint: 'Jeton « classic » avec la case « repo » (et « read:org » pour voir tes organisations). Il reste sur ce serveur et n’est jamais donné aux IA.' }], {},
+        { submit: 'Connecter', extra: h('a', { class: 'btn', href: 'https://github.com/settings/tokens/new?scopes=repo,read:org&description=MuxAI', target: '_blank', rel: 'noopener noreferrer' }, 'Créer un jeton'),
+          onSubmit: async v => { if (!v.token.trim()) throw new Error('Colle le jeton'); S.github = await api('POST', '/api/github', v); S.ghAllowed = undefined; renderMain(); } })];
+    const allow = { orgs: new Set(g.orgs), repos: new Set(g.repos) }, list = h('div', {}, h('div', { class: 'none' }, 'Chargement…'));
+    const push = async () => { try { S.github = await api('PATCH', '/api/github', { orgs: [...allow.orgs], repos: [...allow.repos] }); S.ghAllowed = undefined; } catch (e) { toast(e.message); } };
+    api('GET', '/api/github/owners').then(owners => put(list, owners.map(o => {
+      const key = o.login.toLowerCase(), box = h('div', { class: 'ghrepos' }), count = h('small', {}); let repos = null, open = false;
+      const label = () => { const n = [...allow.repos].filter(r => r.startsWith(key + '/')).length; count.textContent = allow.orgs.has(key) ? 'Tous les dépôts sont ouverts' : n ? n + ' dépôt' + (n > 1 ? 's' : '') + ' ouvert' + (n > 1 ? 's' : '') : 'Fermé'; count.style.color = allow.orgs.has(key) || n ? 'var(--ok)' : ''; };
+      const draw = () => { label(); if (!open) return put(box); if (!repos) return put(box, h('small', {}, 'Chargement…'));
+        put(box, repos.length ? repos.map(r => { const rk = r.full.toLowerCase(); return h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: allow.orgs.has(key) || allow.repos.has(rk), disabled: allow.orgs.has(key), onchange: e => { if (e.target.checked) allow.repos.add(rk); else allow.repos.delete(rk); label(); push(); } }), r.name, r.private && h('small', {}, 'privé')); }) : h('small', {}, 'Aucun dépôt visible avec ce jeton.')); };
+      const all = h('input', { type: 'checkbox', checked: allow.orgs.has(key), onchange: e => { if (e.target.checked) allow.orgs.add(key); else allow.orgs.delete(key); draw(); push(); } });
+      const toggle = async e => { open = !open; e.target.textContent = open ? 'Masquer' : 'Choisir les dépôts'; draw(); if (open && !repos) { try { repos = await api('GET', '/api/github/repos?owner=' + encodeURIComponent(o.login)); } catch (ex) { repos = []; toast(ex.message); } draw(); } };
+      label();
+      return [h('div', { class: 'row' }, icon('git'), h('span', { class: 'n' }, h('div', {}, o.login), h('small', {}, o.me ? 'Ton compte · ' : 'Organisation · ', count)), h('label', { class: 'check' }, all, 'Tout'), h('button', { class: 'btn', type: 'button', onclick: toggle }, 'Choisir les dépôts')), box];
+    }))).catch(e => put(list, h('div', { class: 'none' }, e.message)));
+    return [head('GitHub'), h('p', {}, `Connecté en tant que ${g.login}. Coche une organisation entière, ou choisis ses dépôts un par un. Les IA ne peuvent lire et pousser que sur ce qui est coché.`), list,
+      h('p', { style: 'margin-top:18px' }, 'Pour faire travailler une IA sur un dépôt : crée un projet et choisis le dépôt, il est copié sur le serveur. Ce réglage est un garde-fou, pas un coffre-fort : pour une limite garantie par GitHub, utilise un jeton restreint aux mêmes dépôts.'),
+      h('div', { class: 'form' }, h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: async () => { try { S.github = await api('POST', '/api/github', { token: '' }); S.ghAllowed = undefined; renderMain(); } catch (e) { toast(e.message); } } }, 'Déconnecter GitHub')))];
+  },
+
+  settings(edit) {
+    if (edit) return [head('Nouveau compte'), form([
+      { k: 'name', label: 'Nom d’utilisateur' },
+      { k: 'password', label: 'Mot de passe', type: 'password', ac: 'new-password', hint: '12 caractères minimum. À transmettre à la personne.' },
+      { k: 'role', label: 'Rôle', type: 'select', options: [['user', 'Utilisateur'], ['admin', 'Administrateur']] },
+    ], {}, { submit: 'Créer le compte', onCancel: back('settings'), onSubmit: async v => { await api('POST', '/api/users', v); await saved('settings'); } })];
+    const ok = h('span', { class: 'okmsg' }), users = h('div', {}, h('div', { class: 'none' }, 'Chargement…'));
+    if (isAdmin()) api('GET', '/api/users').then(l => put(users, ...l.map(u => row(h('span', { class: 'av' }, u.name.slice(0, 2)), u.name, u.role === 'admin' ? 'Administrateur' : 'Utilisateur', u.id !== S.me.id && del('Supprimer le compte et ses données', '/api/users/' + u.id, 'settings'))))).catch(e => { users.textContent = e.message; });
+    return [head('Réglages'), h('p', {}, `Connecté en tant que ${S.me.name}.`),
+      h('h3', {}, 'Mot de passe'), form([
+        { k: 'current', label: 'Mot de passe actuel', type: 'password', ac: 'current-password' },
+        { k: 'next', label: 'Nouveau mot de passe', type: 'password', ac: 'new-password', hint: '12 caractères minimum. Les autres sessions ouvertes seront déconnectées.' },
+      ], {}, { submit: 'Changer le mot de passe', extra: ok, onSubmit: async v => { ok.textContent = ''; await api('POST', '/api/auth/password', v); ok.textContent = 'Mot de passe changé.'; } }),
+      isAdmin() && [h('div', { class: 'ph', style: 'margin-top:34px' }, h('h3', { style: 'flex:1;margin:0' }, 'Comptes'), h('button', { class: 'btn', type: 'button', onclick: () => go('settings', {}) }, icon('plus'), 'Nouveau compte')), users,
+        h('div', { class: 'form', style: 'margin-top:16px' }, h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: S.openSignup, onchange: async e => { try { await api('PATCH', '/api/settings', { openSignup: e.target.checked }); S.openSignup = e.target.checked; } catch (ex) { toast(ex.message); } } }), 'Autoriser la création de compte depuis la page de connexion'))]];
+  },
+};
+function renderPage(main) {
+  if (!pages[S.view] || (['connectors', 'devices', 'mcp', 'github'].includes(S.view) && !isAdmin())) { S.view = 'chat'; return renderMain(); }
+  put(main, h('div', { class: 'bar' }, (S.folded !== mobile()) && ib('panel', 'Ouvrir le panneau', fold), h('h1', {}, TITLES[S.view])),
+    h('div', { class: 'page' }, h('div', { class: 'col' }, pages[S.view](S.edit))));
+  const first = S.edit && $('.form input, .form textarea', main); if (first && !mobile()) first.focus();
+}
+
+reload().then(render).catch(e => { $('#root').textContent = 'Serveur injoignable : ' + e.message; });
+</script>
+</body>
+</html>
