@@ -2,10 +2,14 @@
   "manifestVersion": 1,
   "id": "muxai",
   "name": "MuxAI",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Interface web façon ChatGPT pour piloter Claude Code, Codex, Ollama et les API compatibles OpenAI : projets, agents, appareils reliés, outils MCP.",
   "icon": "chat",
   "repository": "https://github.com/Nesaris/MuxAI",
+  "replaces": [
+    { "id": "dialekt", "config": { "SOCLE_JETON_INSTALLATION": "SETUP_TOKEN" } },
+    { "id": "oracle", "config": { "SOCLE_JETON_INSTALLATION": "SETUP_TOKEN" } }
+  ],
   "license": "MIT",
   "install": {
     "type": "compose",
@@ -17,7 +21,7 @@
     "volumes": [{ "name": "data", "path": "/data" }, { "name": "home", "path": "/home/node" }]
   },
   "config": [
-    { "key": "IMAGE_TAG", "label": "Version de l'image", "type": "string", "default": "0.10.0", "advanced": true, "help": "Étiquette de l'image publiée sur ghcr.io." },
+    { "key": "IMAGE_TAG", "label": "Version de l'image", "type": "string", "default": "0.11.0", "advanced": true, "help": "Étiquette de l'image publiée sur ghcr.io." },
     { "key": "MASTER_KEY", "label": "Clé maîtresse", "type": "secret", "generate": "random:32", "help": "Scelle la base et les conversations (AES-256-GCM). Créée par le Hub, gardée dans son coffre, jamais sur le volume de MuxAI. La perdre, c'est perdre les données." },
     { "key": "TRUST_PROXY", "label": "Relais de confiance", "type": "string", "default": "172.16.0.0/12", "advanced": true, "help": "Plages (CIDR, séparées par des virgules) des relais autorisés à transmettre l'adresse du client et le HTTPS : au moins celle du réseau du Hub, où vit Relay." },
     { "key": "SETUP_TOKEN", "label": "Jeton d'installation", "type": "string", "required": true, "help": "Choisis un mot de passe provisoire. MuxAI le demande une seule fois, pour créer le premier compte, qui sera administrateur. Sans lui, personne ne peut prendre ce compte avant toi." }
