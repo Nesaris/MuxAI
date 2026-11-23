@@ -29,7 +29,7 @@ services:
       # Derrière Relay : l'adresse du client et le HTTPS viennent du relais.
       MUXAI_TRUST_PROXY: "{{config.TRUST_PROXY}}"
       # Demandé une seule fois, pour créer le compte administrateur.
-      MUXAI_SETUP_TOKEN: "{{config.SETUP_TOKEN}}"
+      MUXAI_SETUP_TOKEN: "{{config.SOCLE_JETON_INSTALLATION}}"
       # Clé maîtresse : scelle la base et les conversations. Gardée par le Hub, jamais sur le volume.
       MUXAI_KEY: "{{config.MASTER_KEY}}"
 
